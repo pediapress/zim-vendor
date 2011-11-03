@@ -18,7 +18,7 @@ $(BUILD)/cxxtools-build-done:
 
 $(BUILD)/cxxtools-configure-done:
 	mkdir -p $(BUILD)/cxxtools
-	cd $(BUILD)/cxxtools; $(ROOT)/cxxtools/configure --disable-shared --with-pic --prefix $(BUILD)/prefix --disable-demos --disable-unittest
+	cd $(BUILD)/cxxtools; sh $(ROOT)/cxxtools/configure --disable-shared --with-pic --prefix $(BUILD)/prefix --disable-demos --disable-unittest
 	touch $@
 
 # --- xz
@@ -32,7 +32,7 @@ $(BUILD)/xz-build-done:
 
 $(BUILD)/xz-configure-done:
 	mkdir -p $(BUILD)/xz
-	cd $(BUILD)/xz; $(ROOT)/xz/configure --disable-shared --with-pic --prefix $(BUILD)/prefix
+	cd $(BUILD)/xz; sh $(ROOT)/xz/configure --disable-shared --with-pic --prefix $(BUILD)/prefix
 	touch $@
 
 # --- tntdb
@@ -46,7 +46,7 @@ $(BUILD)/tntdb-build-done:
 
 $(BUILD)/tntdb-configure-done:
 	mkdir -p $(BUILD)/tntdb
-	cd $(BUILD)/tntdb; $(ROOT)/tntdb/configure --disable-shared --with-pic --prefix $(BUILD)/prefix --without-postgresql --without-mysql --without-sqlite --without-doxygen
+	cd $(BUILD)/tntdb; sh $(ROOT)/tntdb/configure --disable-shared --with-pic --prefix $(BUILD)/prefix --without-postgresql --without-mysql --without-sqlite --without-doxygen
 	touch $@
 
 # --- zimlib
@@ -60,7 +60,7 @@ $(BUILD)/zimlib-build-done:
 
 $(BUILD)/zimlib-configure-done:
 	mkdir -p $(BUILD)/zimlib
-	cd $(BUILD)/zimlib; $(ROOT)/zimlib/configure --disable-shared --with-pic --prefix $(BUILD)/prefix
+	cd $(BUILD)/zimlib; sh $(ROOT)/zimlib/configure --disable-shared --with-pic --prefix $(BUILD)/prefix
 	touch $@
 
 # --- zimwriter
@@ -74,5 +74,5 @@ $(BUILD)/zimwriter-build-done:
 
 $(BUILD)/zimwriter-configure-done:
 	mkdir -p $(BUILD)/zimwriter
-	cd $(BUILD)/zimwriter; $(ROOT)/zimwriter/configure --disable-shared --with-pic --prefix $(BUILD)/prefix
+	cd $(BUILD)/zimwriter; sh $(ROOT)/zimwriter/configure --disable-shared --with-pic --prefix $(BUILD)/prefix
 	touch $@
