@@ -1,5 +1,6 @@
 AC_INIT(cxxtools, 2.0, [Tommi Maekitalo <tommi@tntnet.org>])
 AM_INIT_AUTOMAKE
+AM_MAINTAINER_MODE
 
 AC_PREREQ([2.5.9])
 

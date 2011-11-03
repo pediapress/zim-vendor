@@ -1,5 +1,6 @@
 AC_INIT(zimwriter, 0.92, [Tommi Maekitalo <tommi@tntnet.org>])
 AM_INIT_AUTOMAKE([subdir-objects])
+AM_MAINTAINER_MODE
 
 abi_current=1
 abi_revision=0
