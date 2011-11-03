@@ -482,6 +482,7 @@ LN_S = @LN_S@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
+MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -617,7 +618,7 @@ all: all-recursive
 
 .SUFFIXES:
 .SUFFIXES: .S .c .lo .o .obj .rc
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(srcdir)/common/Makefile.inc $(srcdir)/check/Makefile.inc $(srcdir)/lz/Makefile.inc $(srcdir)/lzma/Makefile.inc $(srcdir)/rangecoder/Makefile.inc $(srcdir)/delta/Makefile.inc $(srcdir)/simple/Makefile.inc $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(srcdir)/common/Makefile.inc $(srcdir)/check/Makefile.inc $(srcdir)/lz/Makefile.inc $(srcdir)/lzma/Makefile.inc $(srcdir)/rangecoder/Makefile.inc $(srcdir)/delta/Makefile.inc $(srcdir)/simple/Makefile.inc $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -642,9 +643,9 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 
-$(top_srcdir)/configure:  $(am__configure_deps)
+$(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-$(ACLOCAL_M4):  $(am__aclocal_m4_deps)
+$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 liblzma.pc: $(top_builddir)/config.status $(srcdir)/liblzma.pc.in
