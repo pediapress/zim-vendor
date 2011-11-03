@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/include
+INCLUDES = -I$(top_srcdir)/include -I$(abs_top_builddir)/include
 
 lib_LTLIBRARIES = libtntdb.la
 
@@ -25,5 +25,5 @@ libtntdb_la_SOURCES = \
 	transaction.cpp \
 	valueimpl.cpp
 
-libtntdb_la_LDFLAGS = -version-info @sonumber@ $(PTHREAD_LIBS) @SHARED_LIB_FLAG@
+libtntdb_la_LDFLAGS = -version-info @sonumber@ $(PTHREAD_LIBS)
 libtntdb_la_CXXFLAGS = -DDRIVERDIR=\"@driverdir@\" $(PTHREAD_CFLAGS)
