@@ -1,0 +1,7 @@
+#!/bin/sh
+
+echo log standard
+./log
+
+echo log with property-file log.properties
+LOGPROPERTIES=log.properties ./log
