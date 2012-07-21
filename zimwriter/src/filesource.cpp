@@ -59,7 +59,7 @@ namespace zim
       ssize_t s = ::readlink(path.c_str(), p, sizeof(p));
 
       if (s < 0 && errno != EINVAL)
-        throw cxxtools::SystemError( CXXTOOLS_ERROR_MSG("readlink failed") );
+        throw cxxtools::SystemError( "readlink failed" );
 
       return s > 0;
     }
@@ -75,7 +75,7 @@ namespace zim
       ssize_t s = ::readlink(path.c_str(), p, sizeof(p));
 
       if (s < 0)
-        throw cxxtools::SystemError( CXXTOOLS_ERROR_MSG("readlink failed") );
+        throw cxxtools::SystemError( "readlink failed" );
 
       return p;
     }
