@@ -124,7 +124,7 @@ Directory::Directory(const std::string& path)
 , _impl(0)
 {
     if( ! Directory::exists( path.c_str() ) )
-        throw DirectoryNotFound(path, CXXTOOLS_SOURCEINFO);
+        throw DirectoryNotFound(path);
 }
 
 
@@ -133,7 +133,7 @@ Directory::Directory(const FileInfo& fi)
 , _impl(0)
 {
     if( ! fi.isDirectory() )
-        throw DirectoryNotFound(fi.path(), CXXTOOLS_SOURCEINFO);
+        throw DirectoryNotFound(fi.path());
 }
 
 
@@ -150,8 +150,8 @@ Directory::~Directory()
 
 Directory& Directory::operator=(const Directory& dir)
 {
-	_path = dir._path;
-	return *this;
+    _path = dir._path;
+    return *this;
 }
 
 

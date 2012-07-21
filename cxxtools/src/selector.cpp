@@ -114,14 +114,14 @@ bool SelectorBase::updateTimer(std::size_t& lowestTimeout)
     Timespan now = Clock::getSystemTicks();
     Timer* timer = _timers.begin()->second;
     bool timerActive = now >= timer->finished();
-	
+
     while( ! _timers.empty() )
     {
         timer = _timers.begin()->second;
 
         if( now < timer->finished() )
         {
-            cxxtools::int64_t remaining = (timer->finished() - now).toUSecs();
+            int64_t remaining = (timer->finished() - now).toUSecs();
             lowestTimeout = (remaining / 1000);
             if(remaining % 1000 > 0) ++lowestTimeout;
             break;
@@ -154,7 +154,7 @@ bool SelectorBase::wait(std::size_t msecs)
         this->onWait(0);
         return true;
     }
-	
+
     // This handles the case when no timer will become
     // active in the given timeout. The result of the
     // wait call indicates activity
@@ -237,7 +237,7 @@ void Selector::onWake()
 
 SelectorImpl& Selector::impl()
 {
-	return *_impl;
+    return *_impl;
 }
 
 }//namespace cxxtools

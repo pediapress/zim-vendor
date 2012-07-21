@@ -29,23 +29,21 @@
 #define cxxtools_xmlrpc_Client_h
 
 #include <cxxtools/xmlrpc/api.h>
-#include <cxxtools/noncopyable.h>
+#include <cxxtools/remoteclient.h>
 #include <string>
 
 namespace cxxtools {
 
-class ISerializer;
-class IDeserializer;
-
 namespace xmlrpc {
 
-class IRemoteProcedure;
 class ClientImpl;
 
-
-class CXXTOOLS_XMLRPC_API Client : public NonCopyable
+class CXXTOOLS_XMLRPC_API Client : public RemoteClient
 {
         ClientImpl* _impl;
+
+        Client(Client&) { }
+        void operator= (const Client&) { }
 
     protected:
         void impl(ClientImpl* i) { _impl = i; }
@@ -57,11 +55,11 @@ class CXXTOOLS_XMLRPC_API Client : public NonCopyable
 
         virtual ~Client();
 
-        void beginCall(IDeserializer& r, IRemoteProcedure& method, ISerializer** argv, unsigned argc);
+        void beginCall(IComposer& r, IRemoteProcedure& method, IDecomposer** argv, unsigned argc);
 
         void endCall();
 
-        void call(IDeserializer& r, IRemoteProcedure& method, ISerializer** argv, unsigned argc);
+        void call(IComposer& r, IRemoteProcedure& method, IDecomposer** argv, unsigned argc);
 
         std::size_t timeout() const;
 

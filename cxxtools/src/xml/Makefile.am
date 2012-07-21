@@ -10,11 +10,12 @@ libcxxtools_xml_la_SOURCES = \
 	startelement.cpp \
 	xmldeserializer.cpp \
 	xmlerror.cpp \
+	xmlformatter.cpp \
 	xmlreader.cpp \
 	xmlserializer.cpp \
 	xmlwriter.cpp
 
 libcxxtools_xml_la_LIBADD = $(top_builddir)/src/libcxxtools.la
 
-libcxxtools_xml_la_LDFLAGS = -version-info @sonumber@
+libcxxtools_xml_la_LDFLAGS = -version-info @sonumber@ @SHARED_LIB_FLAG@
 

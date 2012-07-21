@@ -46,7 +46,7 @@ namespace
 unsigned short getNumber2(const char* s)
 {
     if( ! std::isdigit(s[0]) || !std::isdigit(s[1]) )
-        throw ConversionError( CXXTOOLS_ERROR_MSG("Invalid DateTime format") );
+        throw ConversionError("Invalid DateTime format");
 
     return (s[0] - '0') * 10 + (s[1] - '0');
 }
@@ -54,7 +54,7 @@ unsigned short getNumber2(const char* s)
 unsigned short getNumber3(const char* s)
 {
     if (!std::isdigit(s[0]) || !std::isdigit(s[1]) || !std::isdigit(s[2]))
-        throw ConversionError( CXXTOOLS_ERROR_MSG("Invalid DateTime format") );
+        throw ConversionError("Invalid DateTime format");
 
     return (s[0] - '0') * 100
         + (s[1] - '0') * 10
@@ -65,7 +65,7 @@ unsigned short getNumber4(const char* s)
 {
     if( ! std::isdigit(s[0]) || ! std::isdigit(s[1]) ||
         ! std::isdigit(s[2]) || ! std::isdigit(s[3]) )
-        throw ConversionError( CXXTOOLS_ERROR_MSG("Invalid DateTime format") );
+        throw ConversionError("Invalid DateTime format");
 
     return (s[0] - '0') * 1000
         + (s[1] - '0') * 100
@@ -75,7 +75,7 @@ unsigned short getNumber4(const char* s)
 
 }
 
-cxxtools::int64_t DateTime::msecsSinceEpoch() const
+int64_t DateTime::msecsSinceEpoch() const
 {
     static const DateTime dt(1970, 1, 1);
     return (*this - dt).totalMSecs();
@@ -83,9 +83,9 @@ cxxtools::int64_t DateTime::msecsSinceEpoch() const
 
 DateTime& DateTime::operator+=(const Timespan& ts)
 {
-    cxxtools::int64_t totalMSecs = ts.totalMSecs();
-    cxxtools::int64_t days = totalMSecs / Time::MSecsPerDay;
-    cxxtools::int64_t overrun = totalMSecs % Time::MSecsPerDay;
+    int64_t totalMSecs = ts.totalMSecs();
+    int64_t days = totalMSecs / Time::MSecsPerDay;
+    int64_t overrun = totalMSecs % Time::MSecsPerDay;
 
     if( (-overrun) > _time.totalMSecs()  )
     {
@@ -103,9 +103,9 @@ DateTime& DateTime::operator+=(const Timespan& ts)
 
 DateTime& DateTime::operator-=(const Timespan& ts)
 {
-    cxxtools::int64_t totalMSecs = ts.totalMSecs();
-    cxxtools::int64_t days = totalMSecs / Time::MSecsPerDay;
-    cxxtools::int64_t overrun = totalMSecs % Time::MSecsPerDay;
+    int64_t totalMSecs = ts.totalMSecs();
+    int64_t days = totalMSecs / Time::MSecsPerDay;
+    int64_t overrun = totalMSecs % Time::MSecsPerDay;
 
     if( overrun > _time.totalMSecs() )
     {
@@ -123,13 +123,13 @@ DateTime& DateTime::operator-=(const Timespan& ts)
 
 Timespan operator-(const DateTime& first, const DateTime& second)
 {
-    cxxtools::int64_t dayDiff      = cxxtools::int64_t( first.date().julian() ) -
-                               cxxtools::int64_t( second.date().julian() );
+    int64_t dayDiff      = int64_t( first.date().julian() ) -
+                               int64_t( second.date().julian() );
 
-    cxxtools::int64_t milliSecDiff = cxxtools::int64_t( first.time().totalMSecs() ) -
-                               cxxtools::int64_t( second.time().totalMSecs() );
+    int64_t milliSecDiff = int64_t( first.time().totalMSecs() ) -
+                               int64_t( second.time().totalMSecs() );
 
-    cxxtools::int64_t result = (dayDiff * Time::MSecsPerDay + milliSecDiff) * 1000;
+    int64_t result = (dayDiff * Time::MSecsPerDay + milliSecDiff) * 1000;
 
     return result;
 }
@@ -157,7 +157,7 @@ void convert(DateTime& dt, const std::string& s)
         || s.at(13) != ':'
         || s.at(16) != ':'
         || s.at(19) != '.')
-        throw ConversionError( CXXTOOLS_ERROR_MSG("Invalid DateTime format") );
+        throw ConversionError("Invalid DateTime format");
 
     const char* d = s.data();
 
@@ -242,7 +242,8 @@ void operator >>=(const SerializationInfo& si, DateTime& datetime)
     }
     else
     {
-        std::string s = si.toValue<std::string>();
+        std::string s;
+        si.getValue(s);
         convert(datetime, s);
     }
 }

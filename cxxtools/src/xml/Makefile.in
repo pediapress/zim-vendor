@@ -39,10 +39,12 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/acx_pthread.m4 \
 	$(top_srcdir)/m4/asmtype.m4 \
-	$(top_srcdir)/m4/cxxtools_logging.m4 $(top_srcdir)/m4/iconv.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.in
+	$(top_srcdir)/m4/ax_check_compile_flag.m4 \
+	$(top_srcdir)/m4/ax_compiler_vendor.m4 \
+	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -75,8 +77,8 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 libcxxtools_xml_la_DEPENDENCIES = $(top_builddir)/src/libcxxtools.la
 am_libcxxtools_xml_la_OBJECTS = characters.lo endelement.lo \
 	entityresolver.lo namespacecontext.lo startelement.lo \
-	xmldeserializer.lo xmlerror.lo xmlreader.lo xmlserializer.lo \
-	xmlwriter.lo
+	xmldeserializer.lo xmlerror.lo xmlformatter.lo xmlreader.lo \
+	xmlserializer.lo xmlwriter.lo
 libcxxtools_xml_la_OBJECTS = $(am_libcxxtools_xml_la_OBJECTS)
 libcxxtools_xml_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
@@ -117,7 +119,6 @@ CXXFLAGS = @CXXFLAGS@
 CXXTOOLS_ATOMICITY = @CXXTOOLS_ATOMICITY@
 CXXTOOLS_CXXFLAGS = @CXXTOOLS_CXXFLAGS@
 CXXTOOLS_LDFLAGS = @CXXTOOLS_LDFLAGS@
-CXXTOOLS_LOGGING = @CXXTOOLS_LOGGING@
 CXXTOOLS_STD_LOCALE = @CXXTOOLS_STD_LOCALE@
 CXXTOOLS_SUSECONDS = @CXXTOOLS_SUSECONDS@
 CYGPATH_W = @CYGPATH_W@
@@ -152,7 +153,6 @@ LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBICONV = @LTLIBICONV@
 LTLIBOBJS = @LTLIBOBJS@
-MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -181,7 +181,6 @@ SET_MAKE = @SET_MAKE@
 SHARED_LIB_FLAG = @SHARED_LIB_FLAG@
 SHELL = @SHELL@
 STRIP = @STRIP@
-TESTDIR = @TESTDIR@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -248,17 +247,18 @@ libcxxtools_xml_la_SOURCES = \
 	startelement.cpp \
 	xmldeserializer.cpp \
 	xmlerror.cpp \
+	xmlformatter.cpp \
 	xmlreader.cpp \
 	xmlserializer.cpp \
 	xmlwriter.cpp
 
 libcxxtools_xml_la_LIBADD = $(top_builddir)/src/libcxxtools.la
-libcxxtools_xml_la_LDFLAGS = -version-info @sonumber@
+libcxxtools_xml_la_LDFLAGS = -version-info @sonumber@ @SHARED_LIB_FLAG@
 all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .cpp .lo .o .obj
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -283,9 +283,9 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 
-$(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
+$(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
+$(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
@@ -335,6 +335,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/startelement.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xmldeserializer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xmlerror.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xmlformatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xmlreader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xmlserializer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xmlwriter.Plo@am__quote@

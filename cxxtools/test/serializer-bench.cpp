@@ -31,8 +31,10 @@
 #include <math.h>
 #include <cxxtools/xml/xmlserializer.h>
 #include <cxxtools/xml/xmldeserializer.h>
-#include <cxxtools/binserializer.h>
-#include <cxxtools/bindeserializer.h>
+#include <cxxtools/jsonserializer.h>
+#include <cxxtools/jsondeserializer.h>
+#include <cxxtools/bin/serializer.h>
+#include <cxxtools/bin/deserializer.h>
 #include <cxxtools/arg.h>
 #include <cxxtools/clock.h>
 #include <cxxtools/convert.h>
@@ -46,6 +48,7 @@ namespace
         int intValue;
         std::string stringValue;
         double doubleValue;
+        bool boolValue;
     };
 
     void operator>>= (const cxxtools::SerializationInfo& si, TestObject& obj)
@@ -53,6 +56,7 @@ namespace
         si.getMember("intValue") >>= obj.intValue;
         si.getMember("stringValue") >>= obj.stringValue;
         si.getMember("doubleValue") >>= obj.doubleValue;
+        si.getMember("boolValue") >>= obj.boolValue;
     }
 
     void operator<<= (cxxtools::SerializationInfo& si, const TestObject& obj)
@@ -60,8 +64,31 @@ namespace
         si.addMember("intValue") <<= obj.intValue;
         si.addMember("stringValue") <<= obj.stringValue;
         si.addMember("doubleValue") <<= obj.doubleValue;
+        si.addMember("boolValue") <<= obj.boolValue;
         si.setTypeName("TestObject");
     }
+
+    class JsonSerializer2 : public cxxtools::JsonSerializer
+    {
+        public:
+            JsonSerializer2() { }
+
+            explicit JsonSerializer2(std::basic_ostream<cxxtools::Char>& ts)
+                : cxxtools::JsonSerializer(ts)
+                { }
+
+            explicit JsonSerializer2(std::ostream& os,
+                cxxtools::TextCodec<cxxtools::Char, char>* codec = 0)
+                : cxxtools::JsonSerializer(os, codec)
+                { }
+
+            template <typename T>
+            JsonSerializer2& serialize(const T& v, const std::string& name)
+            {
+                cxxtools::JsonSerializer::serialize(v);
+                return *this;
+            }
+    };
 }
 
 template <typename T, typename Serializer, typename Deserializer>
@@ -99,22 +126,32 @@ void benchXmlSerialization(const T& d, const char* fname = 0)
 }
 
 template <typename T>
-void benchBinSerialization(const T& d, const char* fname = 0)
+void benchJsonSerialization(const T& d, const char* fname = 0)
 {
-    benchSerialization<T, cxxtools::BinSerializer, cxxtools::BinDeserializer>(d, fname);
+    benchSerialization<T, JsonSerializer2, cxxtools::JsonDeserializer>(d, fname);
 }
 
 template <typename T>
-void benchVector(const char* typeName, unsigned N, bool fileoutput)
+void benchBinSerialization(const T& d, const char* fname = 0)
+{
+    benchSerialization<T, cxxtools::bin::Serializer, cxxtools::bin::Deserializer>(d, fname);
+}
+
+template <typename T>
+void benchVector(const char* typeName, unsigned N, T increment, bool fileoutput)
 {
     std::cout << "vector of " << typeName << " values:" << std::endl;
 
     std::vector<T> v;
-    for (unsigned n = 0; n < N; ++n)
-        v.push_back(n);
+    T value = 0;
+    for (unsigned n = 0; n < N; ++n, value += increment)
+        v.push_back(value);
 
     std::cout << "xml:" << std::endl;
     benchXmlSerialization(v, fileoutput ? (std::string("vector-") + typeName + ".xml").c_str() : 0);
+
+    std::cout << "json:" << std::endl;
+    benchJsonSerialization(v, fileoutput ? (std::string("vector-") + typeName + ".json").c_str() : 0);
 
     std::cout << "bin:" << std::endl;
     benchBinSerialization(v, fileoutput ? (std::string("vector-") + typeName + ".bin").c_str() : 0);
@@ -140,9 +177,13 @@ int main(int argc, char* argv[])
                      "   -C <number>       specify number of iterations for custom object\n"
                      "   -f                write serialized output to files\n" << std::endl;
 
-        benchVector<int>("int", I, fileoutput);
-        benchVector<double>("double", D, fileoutput);
+        if (I.getValue() > 0)
+            benchVector<int>("int", I, 1, fileoutput);
 
+        if (D.getValue() > 0)
+            benchVector<double>("double", D, 0.25, fileoutput);
+
+        if (C.getValue() > 0)
         {
             std::cout << "vector of custom objects:" << std::endl;
 
@@ -153,11 +194,15 @@ int main(int argc, char* argv[])
                 obj.intValue = n;
                 obj.stringValue = cxxtools::convert<std::string>(n);
                 obj.doubleValue = sqrt(static_cast<double>(n));
+                obj.boolValue = n&1;
                 v.push_back(obj);
             }
 
             std::cout << "xml:" << std::endl;
             benchXmlSerialization(v, fileoutput ? "custobject.xml" : 0);
+
+            std::cout << "json:" << std::endl;
+            benchJsonSerialization(v, fileoutput ? "custobject.json" : 0);
 
             std::cout << "bin:" << std::endl;
             benchBinSerialization(v, fileoutput ? "custobject.bin" : 0);

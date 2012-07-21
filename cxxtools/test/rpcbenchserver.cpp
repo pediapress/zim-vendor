@@ -27,15 +27,27 @@
  */
 
 #include <iostream>
+#include <vector>
 #include <cxxtools/log.h>
 #include <cxxtools/arg.h>
 #include <cxxtools/eventloop.h>
 #include <cxxtools/http/server.h>
 #include <cxxtools/xmlrpc/service.h>
+#include <cxxtools/bin/rpcserver.h>
+#include <cxxtools/json/rpcserver.h>
+#include <cxxtools/json/httpservice.h>
 
 std::string echo(const std::string& msg)
 {
   return msg;
+}
+
+std::vector<int> seq(int from, int to)
+{
+    std::vector<int> ret;
+    for (int n = from; n <= to; ++n)
+        ret.push_back(n);
+    return ret;
 }
 
 int main(int argc, char* argv[])
@@ -46,24 +58,45 @@ int main(int argc, char* argv[])
 
     cxxtools::Arg<std::string> ip(argc, argv, 'i');
     cxxtools::Arg<unsigned short> port(argc, argv, 'p', 7002);
+    cxxtools::Arg<unsigned short> bport(argc, argv, 'b', 7003);
+    cxxtools::Arg<unsigned short> jport(argc, argv, 'j', 7004);
     cxxtools::Arg<unsigned> threads(argc, argv, 't', 4);
     cxxtools::Arg<unsigned> maxThreads(argc, argv, 'T', 200);
 
     std::cout << "rpc echo server running on port " << port.getValue() << "\n\n"
                  "options:\n\n"
                  "   -i ip      set interface address to listen on (default: all interfaces)\n"
-                 "   -p number  set port number (default: 7002)\n"
+                 "   -p number  set port number for http (xmlrpc and json over http, default: 7002)\n"
+                 "   -b number  set port number run binary rpc server (default: 7003)\n"
+                 "   -j number  set port number run json rpc server (default: 7004)\n"
                  "   -t number  set minimum number of threads (default: 4)\n"
                  "   -T number  set maximum number of threads (default: 200)\n"
               << std::endl;
 
     cxxtools::EventLoop loop;
+
     cxxtools::http::Server server(loop, ip, port);
     server.minThreads(threads);
     server.maxThreads(maxThreads);
     cxxtools::xmlrpc::Service service;
     service.registerFunction("echo", echo);
-    server.addService("/myservice", service);
+    service.registerFunction("seq", seq);
+    server.addService("/xmlrpc", service);
+
+    cxxtools::bin::RpcServer binServer(loop, ip, bport);
+    binServer.minThreads(threads);
+    binServer.maxThreads(maxThreads);
+    binServer.addService("", service);
+
+    cxxtools::json::RpcServer jsonServer(loop, ip, jport);
+    jsonServer.minThreads(threads);
+    jsonServer.maxThreads(maxThreads);
+    jsonServer.addService("", service);
+
+    cxxtools::json::HttpService jsonhttpService;
+    jsonhttpService.registerFunction("echo", echo);
+    jsonhttpService.registerFunction("seq", seq);
+    server.addService("/jsonrpc", jsonhttpService);
 
     loop.run();
   }

@@ -35,7 +35,6 @@
 #include "cxxtools/xml/xmlerror.h"
 #include "cxxtools/textstream.h"
 #include "cxxtools/utf8codec.h"
-#include "cxxtools/sourceinfo.h"
 #include "cxxtools/log.h"
 #include <stdexcept>
 #include <iostream>
@@ -645,6 +644,12 @@ struct XmlReaderImpl
         }
 
         virtual State* onAlpha(cxxtools::Char c, XmlReaderImpl& reader)
+        {
+            reader._attr.name() += c;
+            return this;
+        }
+
+        virtual State* onColon(cxxtools::Char c, XmlReaderImpl& reader)
         {
             reader._attr.name() += c;
             return this;
@@ -1770,7 +1775,7 @@ const StartElement& XmlReader::nextElement()
         {
             case Node::EndDocument:
             {
-                throw std::logic_error("End of document" + CXXTOOLS_SOURCEINFO);
+                throw std::logic_error("End of document");
             }
             case Node::StartElement:
                 found = true;
@@ -1796,7 +1801,7 @@ const Node& XmlReader::nextTag()
         {
             case Node::EndDocument:
             {
-                throw std::logic_error("End of document" + CXXTOOLS_SOURCEINFO);
+                throw std::logic_error("End of document");
             }
             case Node::StartElement:
             case Node::EndElement:

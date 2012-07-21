@@ -35,8 +35,8 @@ namespace cxxtools
 namespace xmlrpc
 {
 
-void Formatter::addValue(const std::string& name, const std::string& type,
-                         const cxxtools::String& value, const std::string& id)
+void Formatter::addValueString(const std::string& name, const std::string& type,
+                         const cxxtools::String& value)
 {
     _writer->writeStartElement( L"value" );
 
@@ -57,14 +57,7 @@ void Formatter::addValue(const std::string& name, const std::string& type,
 }
 
 
-void Formatter::addReference(const std::string& name, const cxxtools::String& value)
-{
-    throw SerializationError("references not supported");
-}
-
-
-void Formatter::beginArray(const std::string&, const std::string&,
-                           const std::string&)
+void Formatter::beginArray(const std::string&, const std::string&)
 {
     _writer->writeStartElement( L"value" );
     _writer->writeStartElement( L"array" );
@@ -80,8 +73,7 @@ void Formatter::finishArray()
 }
 
 
-void Formatter::beginObject(const std::string& name, const std::string& type,
-                            const std::string& id)
+void Formatter::beginObject(const std::string& name, const std::string& type)
 {
     _writer->writeStartElement( L"value" );
     _writer->writeStartElement( L"struct" );

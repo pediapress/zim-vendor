@@ -29,11 +29,13 @@
 #include "cxxtools/unit/testsuite.h"
 #include "cxxtools/unit/registertest.h"
 #include "cxxtools/serializationinfo.h"
-#include "cxxtools/binserializer.h"
-#include "cxxtools/bindeserializer.h"
+#include "cxxtools/bin/serializer.h"
+#include "cxxtools/bin/deserializer.h"
 #include "cxxtools/log.h"
+#include "cxxtools/hdstream.h"
 #include <limits>
 #include <stdint.h>
+#include <config.h>
 
 log_define("cxxtools.test.binserializer")
 
@@ -44,6 +46,8 @@ namespace
         int intValue;
         std::string stringValue;
         double doubleValue;
+        bool boolValue;
+        bool nullValue;
     };
 
     void operator>>= (const cxxtools::SerializationInfo& si, TestObject& obj)
@@ -51,6 +55,9 @@ namespace
         si.getMember("intValue") >>= obj.intValue;
         si.getMember("stringValue") >>= obj.stringValue;
         si.getMember("doubleValue") >>= obj.doubleValue;
+        si.getMember("boolValue") >>= obj.boolValue;
+        const cxxtools::SerializationInfo* p = si.findMember("nullValue");
+        obj.nullValue = p != 0 && p->isNull();
     }
 
     void operator<<= (cxxtools::SerializationInfo& si, const TestObject& obj)
@@ -58,6 +65,8 @@ namespace
         si.addMember("intValue") <<= obj.intValue;
         si.addMember("stringValue") <<= obj.stringValue;
         si.addMember("doubleValue") <<= obj.doubleValue;
+        si.addMember("boolValue") <<= obj.boolValue;
+        si.addMember("nullValue");
         si.setTypeName("TestObject");
     }
 
@@ -65,7 +74,9 @@ namespace
     {
         return obj1.intValue == obj2.intValue
             && obj1.stringValue == obj2.stringValue
-            && obj1.doubleValue == obj2.doubleValue;
+            && obj1.doubleValue == obj2.doubleValue
+            && obj1.boolValue == obj2.boolValue
+            && obj1.nullValue == obj2.nullValue;
     }
 
     struct TestObject2 : public TestObject
@@ -111,16 +122,18 @@ class BinSerializerTest : public cxxtools::unit::TestSuite
             registerMethod("testArray", *this, &BinSerializerTest::testArray);
             registerMethod("testObject", *this, &BinSerializerTest::testObject);
             registerMethod("testComplexObject", *this, &BinSerializerTest::testComplexObject);
+            registerMethod("testObjectVector", *this, &BinSerializerTest::testObjectVector);
+            registerMethod("testBinaryData", *this, &BinSerializerTest::testBinaryData);
         }
 
         void testScalar()
         {
             std::stringstream data;
-            cxxtools::BinSerializer serializer(data);
-            cxxtools::BinDeserializer deserializer(data);
+            cxxtools::bin::Serializer serializer(data);
+            cxxtools::bin::Deserializer deserializer(data);
 
             int value = 5;
-            serializer.serialize(value, "value");
+            serializer.serialize(value);
 
             int value2 = 0;
             deserializer.deserialize(value2);
@@ -132,10 +145,12 @@ class BinSerializerTest : public cxxtools::unit::TestSuite
         void testIntValue(IntT value)
         {
             std::stringstream data;
-            cxxtools::BinSerializer serializer(data);
-            cxxtools::BinDeserializer deserializer(data);
+            cxxtools::bin::Serializer serializer(data);
+            cxxtools::bin::Deserializer deserializer(data);
 
-            serializer.serialize(value, "value");
+            serializer.serialize(value);
+
+            log_debug("int: " << cxxtools::hexDump(data.str()));
 
             IntT result = 0;
             deserializer.deserialize(result);
@@ -153,33 +168,42 @@ class BinSerializerTest : public cxxtools::unit::TestSuite
             testIntValue(-300);
             testIntValue(-100000);
 
-            testIntValue(static_cast<int64_t>(std::numeric_limits<int8_t>::max()) + 1);
-            testIntValue(static_cast<int64_t>(std::numeric_limits<int16_t>::max()) + 1);
+            testIntValue(static_cast<int16_t>(std::numeric_limits<int8_t>::max()) + 1);
+            testIntValue(static_cast<int32_t>(std::numeric_limits<int16_t>::max()) + 1);
+            testIntValue(std::numeric_limits<int32_t>::max());
+#ifdef INT64_IS_BASETYPE
             testIntValue(static_cast<int64_t>(std::numeric_limits<int32_t>::max()) + 1);
             testIntValue(std::numeric_limits<int64_t>::max());
+#endif
 
-            testIntValue(static_cast<int64_t>(std::numeric_limits<int8_t>::min()) - 1);
-            testIntValue(static_cast<int64_t>(std::numeric_limits<int16_t>::min()) - 1);
+            testIntValue(static_cast<int16_t>(std::numeric_limits<int8_t>::min()) - 1);
+            testIntValue(static_cast<int32_t>(std::numeric_limits<int16_t>::min()) - 1);
+            testIntValue(std::numeric_limits<int32_t>::min());
+#ifdef INT64_IS_BASETYPE
             testIntValue(static_cast<int64_t>(std::numeric_limits<int32_t>::min()) - 1);
             testIntValue(std::numeric_limits<int64_t>::min());
+#endif
 
-            testIntValue(static_cast<uint64_t>(std::numeric_limits<uint8_t>::max()) + 1);
-            testIntValue(static_cast<uint64_t>(std::numeric_limits<uint16_t>::max()) + 1);
+            testIntValue(static_cast<uint16_t>(std::numeric_limits<uint8_t>::max()) + 1);
+            testIntValue(static_cast<uint32_t>(std::numeric_limits<uint16_t>::max()) + 1);
+            testIntValue(std::numeric_limits<uint32_t>::max());
+#ifdef INT64_IS_BASETYPE
             testIntValue(static_cast<uint64_t>(std::numeric_limits<uint32_t>::max()) + 1);
             testIntValue(std::numeric_limits<uint64_t>::max());
+#endif
         }
 
         void testDoubleValue(double value)
         {
             std::stringstream data;
-            cxxtools::BinSerializer serializer(data);
-            cxxtools::BinDeserializer deserializer(data);
+            cxxtools::bin::Serializer serializer(data);
+            cxxtools::bin::Deserializer deserializer(data);
 
-            serializer.serialize(value, "value");
+            serializer.serialize(value);
             double result = 0.0;
             deserializer.deserialize(result);
 
-            log_debug("test double value " << value << " => " << result);
+            log_debug("test double value " << value << " => " << cxxtools::hexDump(data.str()) << " => " << result);
 
             if (value != value) // check for nan
                 CXXTOOLS_UNIT_ASSERT(result != result);
@@ -187,12 +211,19 @@ class BinSerializerTest : public cxxtools::unit::TestSuite
                 CXXTOOLS_UNIT_ASSERT_EQUALS(result, std::numeric_limits<double>::infinity());
             else if (value == -std::numeric_limits<double>::infinity())
                 CXXTOOLS_UNIT_ASSERT_EQUALS(result, -std::numeric_limits<double>::infinity());
-            else
-                CXXTOOLS_UNIT_ASSERT(value / result < 1.00001 && value / result > 0.99999);
+            else if (value / result > 1.00001 || value / result < 0.99999)
+                CXXTOOLS_UNIT_FAIL("double test failed; value " << value << " got " << result);
         }
 
         void testDouble()
         {
+            testDoubleValue(0.0);
+            testDoubleValue(1234.0);   // short float
+            testDoubleValue(-1234.0);   // short float
+            testDoubleValue(12345678.0);   // medium float
+            testDoubleValue(-12345678.0);   // medium float
+            testDoubleValue(123456789123456789.0);  // long float
+            testDoubleValue(-123456789123456789.0);  // long float
             testDoubleValue(-3.877e-123);
             testDoubleValue(std::numeric_limits<double>::max());
             //testDoubleValue(std::numeric_limits<double>::min());
@@ -201,10 +232,10 @@ class BinSerializerTest : public cxxtools::unit::TestSuite
             testDoubleValue(std::numeric_limits<double>::quiet_NaN());
 
             std::stringstream data;
-            cxxtools::BinSerializer serializer(data);
-            cxxtools::BinDeserializer deserializer(data);
+            cxxtools::bin::Serializer serializer(data);
+            cxxtools::bin::Deserializer deserializer(data);
 
-            serializer.serialize(std::numeric_limits<double>::quiet_NaN(), "value");
+            serializer.serialize(std::numeric_limits<double>::quiet_NaN());
             double result = 0.0;
             deserializer.deserialize(result);
 
@@ -215,15 +246,18 @@ class BinSerializerTest : public cxxtools::unit::TestSuite
         void testArray()
         {
             std::stringstream data;
-            cxxtools::BinSerializer serializer(data);
-            cxxtools::BinDeserializer deserializer(data);
+            cxxtools::bin::Serializer serializer(data);
+            cxxtools::bin::Deserializer deserializer(data);
 
             std::vector<int> intvector;
             intvector.push_back(4711);
             intvector.push_back(4712);
             intvector.push_back(-3);
+            intvector.push_back(-257);
 
-            serializer.serialize(intvector, "intvector");
+            serializer.serialize(intvector);
+
+            log_debug("intvector: " << cxxtools::hexDump(data.str()));
 
             std::vector<int> intvector2;
             deserializer.deserialize(intvector2);
@@ -232,19 +266,24 @@ class BinSerializerTest : public cxxtools::unit::TestSuite
             CXXTOOLS_UNIT_ASSERT_EQUALS(intvector[0], intvector2[0]);
             CXXTOOLS_UNIT_ASSERT_EQUALS(intvector[1], intvector2[1]);
             CXXTOOLS_UNIT_ASSERT_EQUALS(intvector[2], intvector2[2]);
+            CXXTOOLS_UNIT_ASSERT_EQUALS(intvector[3], intvector2[3]);
         }
 
         void testObject()
         {
             std::stringstream data;
-            cxxtools::BinSerializer serializer(data);
-            cxxtools::BinDeserializer deserializer(data);
+            cxxtools::bin::Serializer serializer(data);
+            cxxtools::bin::Deserializer deserializer(data);
 
             TestObject obj;
             obj.intValue = 17;
             obj.stringValue = "foobar";
             obj.doubleValue = 3.125;
-            serializer.serialize(obj, "obj");
+            obj.boolValue = true;
+            obj.nullValue = true;
+            serializer.serialize(obj);
+
+            log_debug("bindata testobject: " << cxxtools::hexDump(data.str()));
 
             TestObject obj2;
             deserializer.deserialize(obj2);
@@ -252,20 +291,24 @@ class BinSerializerTest : public cxxtools::unit::TestSuite
             CXXTOOLS_UNIT_ASSERT_EQUALS(obj.intValue, obj2.intValue);
             CXXTOOLS_UNIT_ASSERT_EQUALS(obj.stringValue, obj2.stringValue);
             CXXTOOLS_UNIT_ASSERT_EQUALS(obj.doubleValue, obj2.doubleValue);
+            CXXTOOLS_UNIT_ASSERT_EQUALS(obj.boolValue, obj2.boolValue);
+            CXXTOOLS_UNIT_ASSERT_EQUALS(obj.nullValue, obj2.nullValue);
             CXXTOOLS_UNIT_ASSERT(obj == obj2);
         }
 
         void testComplexObject()
         {
             std::stringstream data;
-            cxxtools::BinSerializer serializer(data);
-            cxxtools::BinDeserializer deserializer(data);
+            cxxtools::bin::Serializer serializer(data);
+            cxxtools::bin::Deserializer deserializer(data);
 
             std::vector<TestObject2> v;
             TestObject2 obj;
             obj.intValue = 17;
             obj.stringValue = "foobar";
             obj.doubleValue = 3.125;
+            obj.boolValue = false;
+            obj.nullValue = true;
             obj.setValue.insert(17);
             obj.setValue.insert(23);
             obj.mapValue[45] = "fourtyfive";
@@ -276,7 +319,9 @@ class BinSerializerTest : public cxxtools::unit::TestSuite
             obj.setValue.insert(88);
             v.push_back(obj);
 
-            serializer.serialize(v, "v");
+            serializer.serialize(v);
+
+            log_debug("bindata complex object: " << cxxtools::hexDump(data.str()));
 
             std::vector<TestObject2> v2;
             deserializer.deserialize(v2);
@@ -284,6 +329,75 @@ class BinSerializerTest : public cxxtools::unit::TestSuite
             CXXTOOLS_UNIT_ASSERT(v == v2);
         }
 
+        void testObjectVector()
+        {
+            std::stringstream data;
+            cxxtools::bin::Serializer serializer(data);
+            cxxtools::bin::Deserializer deserializer(data);
+
+            std::vector<TestObject> obj;
+            obj.resize(2);
+            obj[0].intValue = 17;
+            obj[0].stringValue = "foobar";
+            obj[0].doubleValue = 3.125;
+            obj[0].boolValue = true;
+            obj[0].nullValue = true;
+            obj[1].intValue = 18;
+            obj[1].stringValue = "hi there";
+            obj[1].doubleValue = -17.25;
+            obj[1].boolValue = false;
+            obj[1].nullValue = true;
+
+            serializer.serialize(obj);
+
+            std::vector<TestObject> obj2;
+            deserializer.deserialize(obj2);
+
+            CXXTOOLS_UNIT_ASSERT_EQUALS(obj2.size(), 2);
+            CXXTOOLS_UNIT_ASSERT_EQUALS(obj[0].intValue, obj2[0].intValue);
+            CXXTOOLS_UNIT_ASSERT_EQUALS(obj[0].stringValue, obj2[0].stringValue);
+            CXXTOOLS_UNIT_ASSERT_EQUALS(obj[0].doubleValue, obj2[0].doubleValue);
+            CXXTOOLS_UNIT_ASSERT_EQUALS(obj[0].boolValue, obj2[0].boolValue);
+            CXXTOOLS_UNIT_ASSERT_EQUALS(obj[0].nullValue, obj2[0].nullValue);
+            CXXTOOLS_UNIT_ASSERT_EQUALS(obj[1].intValue, obj2[1].intValue);
+            CXXTOOLS_UNIT_ASSERT_EQUALS(obj[1].stringValue, obj2[1].stringValue);
+            CXXTOOLS_UNIT_ASSERT_EQUALS(obj[1].doubleValue, obj2[1].doubleValue);
+            CXXTOOLS_UNIT_ASSERT_EQUALS(obj[1].boolValue, obj2[1].boolValue);
+            CXXTOOLS_UNIT_ASSERT_EQUALS(obj[1].nullValue, obj2[1].nullValue);
+            CXXTOOLS_UNIT_ASSERT(obj == obj2);
+        }
+
+        void testBinaryData()
+        {
+            std::stringstream data;
+            cxxtools::bin::Serializer serializer(data);
+            cxxtools::bin::Deserializer deserializer(data);
+
+            std::string v;
+            for (unsigned n = 0; n < 1024; ++n)
+                v.push_back(static_cast<char>(n));
+
+            serializer.serialize(v);
+            log_debug("v.data=" << cxxtools::hexDump(data.str()));
+
+            std::string v2;
+            deserializer.deserialize(v2);
+
+            CXXTOOLS_UNIT_ASSERT_EQUALS(v2.size(), 1024);
+            CXXTOOLS_UNIT_ASSERT(v == v2);
+
+            data.str(std::string());
+
+            for (unsigned n = 0; n < 0xffff; ++n)
+                v.push_back(static_cast<char>(n));
+
+            serializer.serialize(v);
+            deserializer.deserialize(v2);
+
+            CXXTOOLS_UNIT_ASSERT_EQUALS(v2.size(), 0xffff + 1024);
+            CXXTOOLS_UNIT_ASSERT(v == v2);
+
+        }
 };
 
 cxxtools::unit::RegisterTest<BinSerializerTest> register_BinSerializerTest;

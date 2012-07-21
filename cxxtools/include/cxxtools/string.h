@@ -156,7 +156,7 @@ class CXXTOOLS_API basic_string< cxxtools::Char > {
         void swap(basic_string& str);
 
         allocator_type get_allocator() const
-        { return _d; }
+        { return _data; }
 
         size_type copy(cxxtools::Char* a, size_type n, size_type pos = 0) const;
 
@@ -200,8 +200,7 @@ class CXXTOOLS_API basic_string< cxxtools::Char > {
 
         basic_string& assign(const wchar_t* str, size_type n);
 
-        basic_string& assign(const cxxtools::Char* str)
-        { return assign(str, traits_type::length(str)); }
+        basic_string& assign(const cxxtools::Char* str);
 
         basic_string& assign(const cxxtools::Char* str, size_type length);
 
@@ -214,8 +213,7 @@ class CXXTOOLS_API basic_string< cxxtools::Char > {
         template <typename InputIterator>
         basic_string& assign(InputIterator begin, InputIterator end);
 
-        basic_string& append(const cxxtools::Char* str)
-        { return append( str, traits_type::length(str) ); }
+        basic_string& append(const cxxtools::Char* str);
 
         basic_string& append(const cxxtools::Char* str, size_type n);
 
@@ -230,24 +228,19 @@ class CXXTOOLS_API basic_string< cxxtools::Char > {
 
         basic_string& append(const cxxtools::Char* begin, const cxxtools::Char* end);
 
-        basic_string& insert(size_type pos, const cxxtools::Char* str)
-        { return this->insert( pos, str, traits_type::length(str) ); }
+        basic_string& insert(size_type pos, const cxxtools::Char* str);
 
         basic_string& insert(size_type pos, const cxxtools::Char* str, size_type n);
 
         basic_string& insert(size_type pos, size_type n, cxxtools::Char ch);
 
-        basic_string& insert(size_type pos, const basic_string& str)
-        { return insert(pos, str.privdata_ro(), str.length()); }
+        basic_string& insert(size_type pos, const basic_string& str);
 
-        basic_string& insert(size_type pos, const basic_string& str, size_type pos2, size_type n)
-        { return insert(pos, str.privdata_ro() + pos2, n > str.length() ? str.length() : n); }
+        basic_string& insert(size_type pos, const basic_string& str, size_type pos2, size_type n);
 
-        basic_string& insert(iterator p, cxxtools::Char ch)
-        { return insert(p - begin(), 1, ch); }
+        basic_string& insert(iterator p, cxxtools::Char ch);
 
-        basic_string& insert(iterator p, size_type n, cxxtools::Char ch)
-        { return insert(p - begin(), n, ch); }
+        basic_string& insert(iterator p, size_type n, cxxtools::Char ch);
 
         // unimplemented
         //template <typename InputIterator>
@@ -419,25 +412,25 @@ class CXXTOOLS_API basic_string< cxxtools::Char > {
             cxxtools::Char* _capacity;
         };
 
-        static const unsigned _minN = (sizeof(Ptr) / sizeof(cxxtools::uint32_t)) + 1;
-        static const unsigned _N = _minN < 8 ? 8 : _minN;
+        static const unsigned _minN = (sizeof(Ptr) / sizeof(uint32_t)) + 1;
+        static const unsigned _shortStringSize = _minN < 8 ? 8 : _minN;
 
         struct Data : public allocator_type
         {
             Data(const allocator_type& a)
             : allocator_type(a)
             {
-                _u._s[0] = 0;
-                _u._s[_N - 1] = _N - 1;
+                u.shortdata[0] = 0;
+                u.shortdata[_shortStringSize - 1] = _shortStringSize - 1;
             }
 
             union
             {
-                Ptr _p;
-                cxxtools::uint32_t _s[_N];
-            } _u;
+                Ptr ptr;
+                uint32_t shortdata[_shortStringSize];
+            } u;
 
-        } _d;
+        } _data;
 
     private:
         const cxxtools::Char* privdata_ro() const
@@ -449,39 +442,39 @@ class CXXTOOLS_API basic_string< cxxtools::Char > {
 
         bool isShortString() const                    { return shortStringMagic() != 0xffff; }
         void markLongString()                         { shortStringMagic() = 0xffff; }
-        const cxxtools::Char* shortStringData() const { return reinterpret_cast<const cxxtools::Char*>(&_d._u._s[0]); }
-        cxxtools::Char* shortStringData()             { return reinterpret_cast<cxxtools::Char*>(&_d._u._s[0]); }
-        cxxtools::uint32_t  shortStringMagic() const  { return _d._u._s[_N - 1]; }
-        cxxtools::uint32_t& shortStringMagic()        { return _d._u._s[_N - 1]; }
-        size_type shortStringLength() const           { return _N - 1 - shortStringMagic(); }
-        size_type shortStringCapacity() const         { return _N - 1; }
-        void setShortStringLength(size_type n)        { shortStringData()[n] = cxxtools::Char(0); shortStringMagic() = _N - n - 1; }
+        const cxxtools::Char* shortStringData() const { return reinterpret_cast<const cxxtools::Char*>(&_data.u.shortdata[0]); }
+        cxxtools::Char* shortStringData()             { return reinterpret_cast<cxxtools::Char*>(&_data.u.shortdata[0]); }
+        uint32_t  shortStringMagic() const            { return _data.u.shortdata[_shortStringSize - 1]; }
+        uint32_t& shortStringMagic()                  { return _data.u.shortdata[_shortStringSize - 1]; }
+        size_type shortStringLength() const           { return _shortStringSize - 1 - shortStringMagic(); }
+        size_type shortStringCapacity() const         { return _shortStringSize - 1; }
+        void setShortStringLength(size_type n)        { shortStringData()[n] = cxxtools::Char(0); shortStringMagic() = _shortStringSize - n - 1; }
         void shortStringAssign(const cxxtools::Char* str, size_type n)
         {
             traits_type::copy(shortStringData(), str, n);
             shortStringData()[n] = cxxtools::Char(0);
-            shortStringMagic() = _N - n - 1;
+            shortStringMagic() = _shortStringSize - n - 1;
         }
         void shortStringAssign(const wchar_t* str, size_type n)
         {
             for (size_type nn = 0; nn < n; ++nn)
                 shortStringData()[nn] = str[nn];
             shortStringData()[n] = cxxtools::Char(0);
-            shortStringMagic() = _N - n - 1;
+            shortStringMagic() = _shortStringSize - n - 1;
         }
 
-        const cxxtools::Char* longStringData() const    { return _d._u._p._begin; }
-        cxxtools::Char* longStringData()                { return _d._u._p._begin; }
-        size_type longStringLength() const              { return _d._u._p._end - _d._u._p._begin; }
-        size_type longStringCapacity() const            { return _d._u._p._capacity - _d._u._p._begin; }
+        const cxxtools::Char* longStringData() const    { return _data.u.ptr._begin; }
+        cxxtools::Char* longStringData()                { return _data.u.ptr._begin; }
+        size_type longStringLength() const              { return _data.u.ptr._end - _data.u.ptr._begin; }
+        size_type longStringCapacity() const            { return _data.u.ptr._capacity - _data.u.ptr._begin; }
         void setLength(size_type n)
         {
             if (isShortString())
                 setShortStringLength(n);
             else
             {
-                _d._u._p._end = _d._u._p._begin + n;
-                _d._u._p._begin[n] = cxxtools::Char::null();
+                _data.u.ptr._end = _data.u.ptr._begin + n;
+                _data.u.ptr._begin[n] = cxxtools::Char::null();
             }
         }
     };
@@ -568,7 +561,7 @@ class CXXTOOLS_API basic_string< cxxtools::Char > {
     inline bool operator>(const basic_string<cxxtools::Char>& a, const wchar_t* b)
     { return a.compare(b) > 0; }
 
-    ostream& operator<< (ostream& out, const basic_string<cxxtools::Char>& str);
+    CXXTOOLS_API ostream& operator<< (ostream& out, const basic_string<cxxtools::Char>& str);
 
 } // namespace std
 

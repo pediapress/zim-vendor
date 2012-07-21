@@ -8,12 +8,21 @@ nobase_include_HEADERS = \
         cxxtools/api.h \
         cxxtools/base64codec.h \
         cxxtools/base64stream.h \
-        cxxtools/bindeserializer.h \
-        cxxtools/binserializer.h \
+        cxxtools/bin/formatter.h \
+        cxxtools/bin/serializer.h \
+        cxxtools/bin/deserializer.h \
+        cxxtools/bin/rpcclient.h \
+        cxxtools/bin/rpcserver.h \
+        cxxtools/bin/valueparser.h \
         cxxtools/byteorder.h \
         cxxtools/cache.h \
         cxxtools/callable.h \
         cxxtools/callable.tpp \
+        cxxtools/composer.h \
+        cxxtools/csvdeserializer.h \
+        cxxtools/csvformatter.h \
+        cxxtools/csvparser.h \
+        cxxtools/csvserializer.h \
         cxxtools/char.h \
         cxxtools/cgi.h \
         cxxtools/clock.h \
@@ -26,9 +35,11 @@ nobase_include_HEADERS = \
         cxxtools/convert.h \
         cxxtools/date.h\
         cxxtools/datetime.h \
+        cxxtools/decomposer.h \
         cxxtools/delegate.h \
         cxxtools/delegate.tpp \
         cxxtools/deserializer.h \
+        cxxtools/deserializerbase.h \
         cxxtools/dir.h \
         cxxtools/directory.h \
         cxxtools/dlloader.h \
@@ -44,6 +55,7 @@ nobase_include_HEADERS = \
         cxxtools/function.h \
         cxxtools/function.tpp \
         cxxtools/hdstream.h \
+        cxxtools/hmac.h \
         cxxtools/http/api.h \
         cxxtools/http/client.h \
         cxxtools/http/messageheader.h \
@@ -62,6 +74,15 @@ nobase_include_HEADERS = \
         cxxtools/iodevice.h \
         cxxtools/iostream.h \
         cxxtools/join.h \
+        cxxtools/json/httpclient.h \
+        cxxtools/json/httpservice.h \
+        cxxtools/json/request.h \
+        cxxtools/json/responder.h \
+        cxxtools/json/rpcclient.h \
+        cxxtools/json/rpcserver.h \
+        cxxtools/jsondeserializer.h \
+        cxxtools/jsonformatter.h \
+        cxxtools/jsonparser.h \
         cxxtools/jsonserializer.h \
         cxxtools/library.h \
         cxxtools/log.h \
@@ -100,12 +121,17 @@ nobase_include_HEADERS = \
         cxxtools/quotedprintablestream.h \
         cxxtools/refcounted.h \
         cxxtools/regex.h \
+        cxxtools/remoteclient.h \
+        cxxtools/remoteexception.h \
+        cxxtools/remoteprocedure.h \
+        cxxtools/remoteresult.h \
         cxxtools/selector.h \
         cxxtools/selectable.h \
         cxxtools/semaphore.h \
         cxxtools/serializationerror.h \
         cxxtools/serializationinfo.h \
-        cxxtools/serializer.h \
+        cxxtools/serviceprocedure.h \
+        cxxtools/serviceregistry.h \
         cxxtools/settings.h \
         cxxtools/split.h \
         cxxtools/signal.h \
@@ -132,19 +158,12 @@ nobase_include_HEADERS = \
         cxxtools/timespan.h \
         cxxtools/trim.h \
         cxxtools/typetraits.h \
-        cxxtools/types.h \
         cxxtools/utf8codec.h \
         cxxtools/uuencode.h \
         cxxtools/void.h \
         cxxtools/xmltag.h \
         cxxtools/log/cxxtools.h \
         cxxtools/log/cxxtools_init.h \
-        cxxtools/log/disable.h \
-        cxxtools/log/disable_init.h \
-        cxxtools/log/log4cplus.h \
-        cxxtools/log/log4cplus_init.h \
-        cxxtools/log/log4cxx.h \
-        cxxtools/log/log4cxx_init.h \
         cxxtools/unit/application.h \
         cxxtools/unit/assertion.h \
         cxxtools/unit/registertest.h \
@@ -170,18 +189,17 @@ nobase_include_HEADERS = \
         cxxtools/xml/processinginstruction.h \
         cxxtools/xml/startelement.h \
         cxxtools/xml/xmlerror.h \
+        cxxtools/xml/xmlformatter.h \
         cxxtools/xml/xmldeserializer.h \
         cxxtools/xml/xmlreader.h \
         cxxtools/xml/xmlserializer.h \
         cxxtools/xml/xmlwriter.h \
         cxxtools/xmlrpc/api.h \
         cxxtools/xmlrpc/client.h \
+        cxxtools/xmlrpc/errorcodes.h \
         cxxtools/xmlrpc/httpclient.h \
-        cxxtools/xmlrpc/fault.h \
         cxxtools/xmlrpc/formatter.h \
-        cxxtools/xmlrpc/remoteprocedure.h \
         cxxtools/xmlrpc/responder.h \
-        cxxtools/xmlrpc/result.h \
         cxxtools/xmlrpc/scanner.h \
         cxxtools/xmlrpc/service.h
 

@@ -35,6 +35,7 @@
 #include <cxxtools/date.h>
 #include <string>
 #include <map>
+#include <stdint.h>
 
 namespace cxxtools
 {
@@ -47,25 +48,25 @@ class SerializationInfo;
 class DateTime
 {
     public:
-		DateTime()
-		{ }
+        DateTime()
+        { }
 
-		DateTime(int year, unsigned month, unsigned day,
-		                   unsigned hour = 0, unsigned minute = 0, 
-		                   unsigned second = 0, unsigned msec = 0)
-		: _date(year, month, day)
-		, _time(hour, minute, second, msec)
-		{ }
+        DateTime(int year, unsigned month, unsigned day,
+                           unsigned hour = 0, unsigned minute = 0, 
+                           unsigned second = 0, unsigned msec = 0)
+        : _date(year, month, day)
+        , _time(hour, minute, second, msec)
+        { }
 
-		DateTime(const DateTime& dateTime)
-		: _date( dateTime.date() )
-		, _time( dateTime.time() )
-		{ }
+        DateTime(const DateTime& dateTime)
+        : _date( dateTime.date() )
+        , _time( dateTime.time() )
+        { }
 
         DateTime& operator=(const DateTime& dateTime);
 
         ~DateTime()
-		{}
+        {}
 
         static DateTime fromJulianDays(unsigned julianDays)
         {
@@ -83,7 +84,7 @@ class DateTime
             DateTime. And accordingly a "GMT" millisecond value will lead
             to a "GMT" DateTime.
         */
-        static inline DateTime fromMSecsSinceEpoch(const cxxtools::int64_t msecsSinceEpoch)
+        static inline DateTime fromMSecsSinceEpoch(const int64_t msecsSinceEpoch)
         {
             static const DateTime dt(1970, 1, 1);
             Timespan ts(msecsSinceEpoch*1000);
@@ -162,7 +163,7 @@ class DateTime
             millisecond value. And  accordingly calling this API on a "GMT"
             DateTime will lead to a "GMT" millisecond value.
         */
-        cxxtools::int64_t msecsSinceEpoch() const;
+        int64_t msecsSinceEpoch() const;
 
         std::string toIsoString() const;
 
@@ -261,9 +262,9 @@ inline std::string DateTime::toIsoString() const
 
 inline DateTime& DateTime::operator=(const DateTime& dateTime)
 {
-	_date = dateTime.date();
-	_time = dateTime.time();
-	return *this;
+    _date = dateTime.date();
+    _time = dateTime.time();
+    return *this;
 }
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 by Marc Boris Duerner
+ * Copyright (C) 2011 Tommi Maekitalo
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,185 +25,72 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef cxxtools_Deserializer_h
-#define cxxtools_Deserializer_h
 
-#include <cxxtools/api.h>
-#include <cxxtools/serializationinfo.h>
-#include <map>
-#include <typeinfo>
+#ifndef CXXTOOLS_DESERIALIZER_H
+#define CXXTOOLS_DESERIALIZER_H
 
-namespace cxxtools {
+#include <cxxtools/deserializerbase.h>
+#include <cxxtools/serializationerror.h>
+#include <cxxtools/composer.h>
+#include <stdexcept>
 
-class DeserializationContext;
-
-
-class CXXTOOLS_API IDeserializer
+namespace cxxtools
 {
-    public:
-        IDeserializer()
-        : _parent(0)
-        {}
+    /**
+     * convert format to SerializationInfo
+     */
+    class CXXTOOLS_API Deserializer : public DeserializerBase
+    {
+            // make non copyable
+            Deserializer(const Deserializer&)  { }
+            Deserializer& operator= (const Deserializer&) { return *this; }
 
-        virtual ~IDeserializer()
-        {}
+        public:
+            Deserializer()
+            { }
 
-        void setParent(IDeserializer* parent)
-        { _parent = parent; }
+            virtual ~Deserializer()
+            { }
 
-        IDeserializer* parent()
-        { return _parent; }
+            /** @brief Deserialize an object
 
-        virtual void* target() = 0;
-
-        virtual const std::type_info& targetType() = 0;
-
-        virtual void setName(const std::string& name) = 0;
-
-        virtual void setValue(const cxxtools::String& value) = 0;
-
-        virtual void setId(const std::string& id) = 0;
-
-        virtual void setTypeName(const std::string& type) = 0;
-
-        virtual void setReference(const std::string& id) = 0;
-
-        virtual IDeserializer* beginMember(const std::string& name, const std::string& type, SerializationInfo::Category category) = 0;
-
-        virtual IDeserializer* leaveMember() = 0;
-
-        virtual void fixup(DeserializationContext& ctx) = 0;
-
-    protected:
-        void fixupEach(IDeserializer* deser, cxxtools::SerializationInfo& si, DeserializationContext& ctx);
-
-    private:
-        IDeserializer* _parent;
-};
-
-
-template <typename T>
-class Deserializer : public IDeserializer
-{
-    public:
-        Deserializer()
-        : _type(0)
-        , _current(&_si)
-        {}
-
-        void begin(T& type)
-        {
-            _type = &type;
-            _current = &_si;
-            _si.clear();
-        }
-
-        virtual void* target()
-        {
-            return _type;
-        }
-
-        virtual const std::type_info& targetType()
-        {
-            return typeid(T);
-        }
-
-        virtual void setName(const std::string& name)
-        {
-            _current->setName(name);
-        }
-
-        virtual void setId(const std::string& id)
-        {
-            _current->setId(id);
-        }
-
-        virtual void setTypeName(const std::string& type)
-        {
-            _current->setTypeName(type);
-        }
-
-        virtual void setValue(const cxxtools::String& value)
-        {
-            _current->setValue(value);
-        }
-
-        virtual void setReference(const std::string& id)
-        {
-           _current->setValue(id);
-           _current->setCategory(SerializationInfo::Reference);
-        }
-
-        virtual IDeserializer* beginMember(const std::string& name, const std::string& type, SerializationInfo::Category category)
-        {
-            SerializationInfo& child = _current->addMember(name);
-            child.setTypeName(type);
-            child.setCategory(category);
-            _current = &child;
-            return this;
-        }
-
-        virtual IDeserializer* leaveMember()
-        {
-            if( ! _current->parent() )
+                This method will deserialize the object \a type from an
+                input format. The type \a type must be serializable.
+            */
+            template <typename T>
+            void deserialize(T& type)
             {
-                *_current >>= *_type;
-
-                if( ! this->parent() )
-                    throw std::runtime_error("invalid member");
-
-                return this->parent();
+                begin();
+                doDeserialize();
+                Composer<T> composer;
+                composer.begin(type);
+                composer.fixup(*si());
             }
 
-            _current = _current->parent();
-            return this;
-        }
+            template <typename T>
+            void deserialize(T& type, const std::string& name)
+            {
+                begin();
+                doDeserialize();
 
-        virtual void fixup(DeserializationContext& ctx)
-        {
-            // SI's for unfixed pointers contain the fixup address now
-            // other types may only point to _type,but not to its members
-            *_current >>= *_type;
+                SerializationInfo* p = current()->findMember(name);
+                if( !p )
+                    throw SerializationMemberNotFound(name);
 
-            fixupEach(this, _si, ctx);
-        }
+                Composer<T> composer;
+                composer.begin(type);
+                composer.fixup(*p);
+            }
 
-    private:
-        T* _type;
-        cxxtools::SerializationInfo _si;
-        cxxtools::SerializationInfo* _current;
-};
+            void deserialize()
+            {
+                doDeserialize();
+            }
 
-
-class CXXTOOLS_API DeserializationContext
-{
-    struct FixupInfo
-    {
-        void* address;
-        const std::type_info* type;
+        private:
+            virtual void doDeserialize() = 0;
     };
 
-    public:
-        DeserializationContext();
+}
 
-        virtual ~DeserializationContext();
-
-        void addObject(const std::string& id, void* obj, const std::type_info& fixupInfo);
-
-        void addFixup(const std::string& id, void* obj, const std::type_info& fixupInfo);
-
-        void clear();
-
-        void fixup();
-
-    protected:
-        virtual bool checkFixup(const std::type_info& from, const std::type_info& to);
-
-    private:
-        std::map<std::string, FixupInfo> _targets;
-        std::map<std::string, FixupInfo> _pointers;
-};
-
-} // namespace cxxtools
-
-#endif
+#endif // CXXTOOLS_DESERIALIZER_H

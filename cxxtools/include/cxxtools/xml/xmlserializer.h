@@ -28,120 +28,15 @@
 #ifndef cxxtools_Xml_XmlSerializer_h
 #define cxxtools_Xml_XmlSerializer_h
 
-#include <cxxtools/string.h>
-#include <cxxtools/formatter.h>
-#include <cxxtools/serializer.h>
-#include <memory>
+#include <cxxtools/xml/xmlformatter.h>
+#include <cxxtools/decomposer.h>
 #include <sstream>
-#include <cxxtools/xml/xmlwriter.h>
 
-namespace cxxtools {
-
-namespace xml {
-
-/** @brief Serialize objects or object data to XML
-
-    Thic class performs XML serialization of a single object or
-    object data.
-*/
-class XmlFormatter : public cxxtools::Formatter
+namespace cxxtools
 {
-    public:
-        /** @brief Construct a serializer without initializing the
-                    serializer for writing.
 
-            The serializer can be "opened" for writing by calling
-            method attach().
-        */
-        XmlFormatter();
-
-        /** @brief Construct a serializer writing to a byte stream
-
-            The serializer will write the objects as XML with
-            UTF-8 encoding to the output stream.
-        */
-        XmlFormatter(std::ostream& os);
-
-
-        /** @brief Construct a serializer writing to the given XmlWriter object
-
-            The serializer will write the objects to the given XmlWriter object.
-            This class will not free the given XmlWriter object. The caller is
-            responsible to free it if needed.
-        */
-        XmlFormatter(cxxtools::xml::XmlWriter* writer);
-
-        //! @brief Destructor
-        ~XmlFormatter();
-
-        /** @brief Opens this serializer for writing into the given stream.
-
-            The serializer will write the objects as XML with
-            UTF-8 encoding to the output stream.
-
-            This method does not have to be called if this XmlSerializer object
-            was constructed using the constructor that takes an ostream or
-            XmlWriter object. If this method is called anyway or called twice an
-            std::logic_error is thrown.
-        */
-        void attach(std::ostream& os);
-
-        /** @brief Opens this serializer for writing into the given XmlWriter object.
-
-            The serializer will write the objects to the given XmlWriter object.
-
-            This method does not have to be called if this XmlSerializer object
-            was constructed using the constructor that takes an ostream or
-            XmlWriter object. If this method is called anyway or called twice an
-            std::logic_error is thrown.
-
-            This class will not free the given XmlWriter object. The caller is
-            responsible to free it if needed.
-        */
-        void attach(cxxtools::xml::XmlWriter& writer);
-
-        /** @brief Detaches the currently set writer from this object.
-
-            Before detaching the writer, the underlaying stream is flushed.
-            If there is no currently set writer, nothing happens.
-        */
-        void detach();
-
-        //! @internal
-        void flush();
-
-        void addValue(const std::string& name, const std::string& type,
-                      const cxxtools::String& value, const std::string& id);
-
-        void addReference(const std::string& name, const cxxtools::String& value);
-
-        void beginArray(const std::string& name, const std::string& type,
-                        const std::string& id);
-
-        void finishArray();
-
-        void beginObject(const std::string& name, const std::string& type,
-                         const std::string& id);
-
-        void beginMember(const std::string& name);
-
-        void finishMember();
-
-        void finishObject();
-
-        void finish();
-
-    private:
-        void beginComplexElement(const std::string& name, const std::string& type,
-                        const std::string& id, const String& category);
-
-        //! @internal
-        cxxtools::xml::XmlWriter* _writer;
-
-        //! @internal
-        std::auto_ptr<cxxtools::xml::XmlWriter> _deleter;
-};
-
+namespace xml
+{
 
 /** @brief Serialize objects or object data to XML
 
@@ -210,6 +105,30 @@ class XmlSerializer
         */
         void detach();
 
+        void useXmlDeclaration(bool sw)
+        { _formatter.useXmlDeclaration(sw); }
+
+        bool useXmlDeclaration() const
+        { return _formatter.useXmlDeclaration(); }
+
+        void useIndent(bool sw)
+        { _formatter.useIndent(sw); }
+
+        bool useIndent() const
+        { return _formatter.useIndent(); }
+
+        void useEndl(bool sw)
+        { _formatter.useEndl(sw); }
+
+        bool useEndl() const
+        { return _formatter.useEndl(); }
+
+        void useAttributes(bool sw)
+        { _formatter.useAttributes(sw); }
+
+        bool useAttributes() const
+        { return _formatter.useAttributes(); }
+
         /** @brief Serialize an object to XML
 
             The serializer will serialize the object \a type as
@@ -220,19 +139,17 @@ class XmlSerializer
         template <typename T>
         void serialize(const T& type, const std::string& name)
         {
-            cxxtools::ISerializer* serializer = _context.begin(type);
-            serializer->setName(name);
+            Decomposer<T> decomposer;
+            decomposer.begin(type);
+            decomposer.setName(name);
+            decomposer.format(_formatter);
+            _formatter.finish();
+            _formatter.flush();
         }
 
         void finish()
         {
-            _context.fixdown(_formatter);
-            _context.clear();
-            flush();
         }
-
-        //! @internal
-        void flush();
 
         template <typename T>
         static std::string toString(const T& type, const std::string& name, bool beautify = false)
@@ -248,9 +165,6 @@ class XmlSerializer
 
     private:
         XmlFormatter _formatter;
-
-        //! @internal
-        cxxtools::SerializationContext _context;
 };
 
 } // namespace xml

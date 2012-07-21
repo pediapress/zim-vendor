@@ -29,27 +29,25 @@
 #define cxxtools_xmlrpc_ClientImpl_h
 
 #include <cxxtools/xmlrpc/api.h>
-#include <cxxtools/xmlrpc/fault.h>
+#include <cxxtools/remoteexception.h>
 #include <cxxtools/xmlrpc/formatter.h>
 #include <cxxtools/xmlrpc/scanner.h>
 #include <cxxtools/xml/xmlreader.h>
 #include <cxxtools/xml/xmlwriter.h>
+#include <cxxtools/composer.h>
+#include <cxxtools/decomposer.h>
 #include <cxxtools/deserializer.h>
-#include <cxxtools/serializer.h>
 #include <cxxtools/connectable.h>
 #include <cxxtools/textstream.h>
 #include <string>
-#include <sstream>
-#include <cstddef>
 
 namespace cxxtools
 {
 
-namespace xmlrpc
-{
-
 class IRemoteProcedure;
 
+namespace xmlrpc
+{
 
 class ClientImpl : public cxxtools::Connectable
 {
@@ -72,11 +70,11 @@ class ClientImpl : public cxxtools::Connectable
 
         virtual ~ClientImpl();
 
-        void beginCall(IDeserializer& r, IRemoteProcedure& method, ISerializer** argv, unsigned argc);
+        void beginCall(IComposer& r, IRemoteProcedure& method, IDecomposer** argv, unsigned argc);
 
         void endCall();
 
-        void call(IDeserializer& r, IRemoteProcedure& method, ISerializer** argv, unsigned argc);
+        void call(IComposer& r, IRemoteProcedure& method, IDecomposer** argv, unsigned argc);
 
         std::size_t timeout() const  { return _timeout; }
 
@@ -104,7 +102,7 @@ class ClientImpl : public cxxtools::Connectable
         virtual std::ostream& prepareRequest() = 0;
 
     protected:
-        void prepareRequest(const String& name, ISerializer** argv, unsigned argc);
+        void prepareRequest(const String& name, IDecomposer** argv, unsigned argc);
 
         void advance(const xml::Node& node);
 
@@ -113,11 +111,11 @@ class ClientImpl : public cxxtools::Connectable
         xml::XmlReader _reader;
         xml::XmlWriter _writer;
         Formatter _formatter;
+        DeserializerBase _deserializer;
         Scanner _scanner;
         IRemoteProcedure* _method;
-        DeserializationContext _context;
-        Fault _fault;
-        Deserializer<Fault> _fh;
+        RemoteException _fault;
+        Composer<RemoteException> _fh;
         std::size_t _timeout;
         bool _errorPending;
 };

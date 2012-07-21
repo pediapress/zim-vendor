@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2005-2008 by Dr. Marc Boris Duerner
+ * Copyright (C) 2011 by Tommi Maekitalo
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,10 +38,12 @@
 #include <map>
 #include <list>
 #include <deque>
+#include <limits>
 #include <typeinfo>
 #include <cxxtools/config.h>
 
-namespace cxxtools {
+namespace cxxtools
+{
 
 /** @brief Represents arbitrary types during serialization.
 */
@@ -50,11 +53,22 @@ class CXXTOOLS_API SerializationInfo
 
     public:
         enum Category {
-            Void = 0, Value = 1, Object = 2, Array = 6, Reference = 8
+            Void = 0, Value = 1, Object = 2, Array = 6
         };
 
         class Iterator;
         class ConstIterator;
+
+#ifdef HAVE_LONG_LONG
+        typedef long long int_type;
+#else
+        typedef long int_type;
+#endif
+#ifdef HAVE_UNSIGNED_LONG_LONG
+        typedef unsigned long long unsigned_type;
+#else
+        typedef unsigned long unsigned_type;
+#endif
 
     public:
         SerializationInfo();
@@ -62,7 +76,7 @@ class CXXTOOLS_API SerializationInfo
         SerializationInfo(const SerializationInfo& si);
 
         ~SerializationInfo()
-        {}
+        { _releaseValue(); }
 
         void reserve(size_t n);
 
@@ -106,72 +120,72 @@ class CXXTOOLS_API SerializationInfo
             _name = name;
         }
 
-        void setId(const std::string& id)
-        {
-            _id = id;
-        }
-
-        const std::string& id() const
-        {
-            return _id;
-        }
-
-        /** @brief Serialization of weak pointers
-        */
-        void setReference(void* ref);
-
-        /** @brief Serialization of weak pointers
-        */
-        SerializationInfo& addReference(const std::string& name, void* ref);
-
-        /** @brief Deserialization of weak pointers
-        */
-        template <typename T>
-        void toReference(T*& type) const
-        {
-            this->getReference( reinterpret_cast<void*&>(type), typeid(T) );
-        }
-
-        /** @brief Deserialization of weak member pointers
-        */
-        template <typename T>
-        void getReference(const std::string& name, T*& type) const
-        {
-            this->getMember(name).getReference( reinterpret_cast<void*&>(type), typeid(T) );
-        }
-
-        void* fixupAddr() const;
-
-        const std::type_info& fixupInfo() const;
-
         /** @brief Serialization of flat data-types
         */
-        template <typename T>
-        void setValue(const T& value)
-        {
-            convert(_value, value);
-            _category = Value;
-        }
+        void setValue(const String& value)       { _setString(value); }
+        void setValue(const std::string& value)  { _setString8(value); }
+        void setValue(const char* value)         { _setString8(value); }
+        void setValue(Char value)                { _setString(String(1, value)); }
+        void setValue(wchar_t value)             { _setString(String(1, value)); }
+        void setValue(bool value)                { _setBool(value) ; }
+        void setValue(char value)                { _setChar(value) ; }
+        void setValue(unsigned char value)       { _setUInt(value) ; }
+        void setValue(short value)               { _setInt(value) ; }
+        void setValue(unsigned short value)      { _setUInt(value) ; }
+        void setValue(int value)                 { _setInt(value) ; }
+        void setValue(unsigned int value)        { _setUInt(value) ; }
+        void setValue(long value)                { _setInt(value) ; }
+        void setValue(unsigned long value)       { _setUInt(value) ; }
+#ifdef HAVE_LONG_LONG
+        void setValue(long long value)           { _setInt(value) ; }
+#endif
+#ifdef HAVE_UNSIGNED_LONG_LONG
+        void setValue(unsigned long long value)  { _setUInt(value) ; }
+#endif
+
+        void setValue(float value)               { _setFloat(value); }
+        void setValue(double value)              { _setFloat(value); }
+        void setValue(long double value)         { _setFloat(value); }
+        void setNull();
 
         /** @brief Deserialization of flat data-types
         */
-        template <typename T>
-        T toValue() const
-        {
-            return convert<T>(_value);
-        }
-
-        /** @brief Deserialization of flat data-types
-        */
-        template <typename T>
-        void toValue(T& value) const
-        {
-            convert(value, _value);
-        }
-
-        /** @brief Deserialization of flat member data-types
-        */
-        const cxxtools::String& toString() const;
+        void getValue(String& value) const;
+        void getValue(std::string& value) const;
+        void getValue(Char& value) const               { value = _getWChar(); }
+        void getValue(wchar_t& value) const            { value = _getWChar(); }
+        void getValue(bool& value) const               { value = _getBool(); }
+        void getValue(char& value) const               { value = _getChar(); }
+        void getValue(signed char& value) const
+            { value = _getInt("signed char", std::numeric_limits<signed char>::min(), std::numeric_limits<signed char>::max()); }
+        void getValue(unsigned char& value) const
+            { value = _getUInt("unsigned char", std::numeric_limits<unsigned char>::max()); }
+        void getValue(short& value) const
+            { value = _getInt("short", std::numeric_limits<short>::min(), std::numeric_limits<short>::max()); }
+        void getValue(unsigned short& value) const
+            { value = _getUInt("unsigned short", std::numeric_limits<unsigned short>::max()); }
+        void getValue(int& value) const
+            { value = _getInt("int", std::numeric_limits<int>::min(), std::numeric_limits<int>::max()); }
+        void getValue(unsigned int& value) const
+            { value = _getUInt("unsigned int", std::numeric_limits<unsigned int>::max()); }
+        void getValue(long& value) const
+            { value = _getInt("long", std::numeric_limits<long>::min(), std::numeric_limits<long>::max()); }
+        void getValue(unsigned long& value) const
+            { value = _getUInt("unsigned long", std::numeric_limits<unsigned long>::max()); }
+#ifdef HAVE_LONG_LONG
+        void getValue(long long& value) const
+            { value = _getInt("long long", std::numeric_limits<long long>::min(), std::numeric_limits<long long>::max()); }
+#endif
+#ifdef HAVE_UNSIGNED_LONG_LONG
+        void getValue(unsigned long long& value) const
+            { value = _getUInt("unsigned long long", std::numeric_limits<unsigned long long>::max()); }
+#endif
+        void getValue(float& value) const
+            { value = _getFloat("float", std::numeric_limits<float>::max()); }
+        void getValue(double& value) const
+            { value = _getFloat("double", std::numeric_limits<double>::max()); }
+        void getValue(long double& value) const
+            { value = _getFloat("long double", std::numeric_limits<long double>::max()); }
 
         /** @brief Serialization of flat member data-types
         */
@@ -208,33 +222,6 @@ class CXXTOOLS_API SerializationInfo
             return true;
         }
 
-        /** @brief Compiler workaround.
-            This is needed for some compilers (GCC 3.x) to allow access to
-            method 'T getValue(const std::string& name) const' below.
-         */
-        template <typename T>
-        friend T getValue(const std::string& name, SerializationInfo* si);
-
-        /** @brief Deserialization of flat child value types
-        */
-        template <typename T>
-        T getValue(const std::string& name) const
-        {
-            T value;
-            const SerializationInfo& info = this->getMember(name);
-            info.toValue(value);
-            return value;
-        }
-
-        /** @brief Deserialization of flat child value types
-        */
-        template <typename T>
-        void getValue(const std::string& name, T& value) const
-        {
-            const SerializationInfo& info = this->getMember(name);
-            return info.toValue(value);
-        }
-
         /** @brief Find member data by name
 
             This method returns the data for an object with the name \a name.
@@ -266,9 +253,20 @@ class CXXTOOLS_API SerializationInfo
 
         void clear();
 
-    protected:
-        void getReference(void*& type, const std::type_info& ti) const;
+        void swap(SerializationInfo& si);
 
+        bool isNull() const     { return _t == t_none && _category == Void; }
+        bool isString() const   { return _t == t_string; }
+        bool isString8() const  { return _t == t_string8; }
+        bool isChar() const     { return _t == t_char; }
+        bool isBool() const     { return _t == t_bool; }
+        bool isInt() const      { return _t == t_int; }
+        bool isUInt() const     { return _t == t_uint; }
+        bool isFloat() const    { return _t == t_float; }
+
+        void dump(std::ostream& out, const std::string& praefix = std::string()) const;
+
+    protected:
         void setParent(SerializationInfo& si)
         { _parent = &si; }
 
@@ -277,10 +275,55 @@ class CXXTOOLS_API SerializationInfo
         Category _category;
         std::string _name;
         std::string _type;
-        std::string _id;
-        mutable void* _fixupAddr; // only refs
-        mutable const std::type_info* _fixupInfo; // only refs
-        cxxtools::String _value;        // values/refs
+
+        void _releaseValue();
+        void _setString(const String& value);
+        void _setString8(const std::string& value);
+        void _setString8(const char* value);
+        void _setChar(char value);
+        void _setBool(bool value);
+        void _setInt(int_type value);
+        void _setUInt(unsigned_type value);
+        void _setFloat(long double value);
+
+        bool _getBool() const;
+        wchar_t _getWChar() const;
+        char _getChar() const;
+        int_type _getInt(const char* type, int_type min, int_type max) const;
+        unsigned_type _getUInt(const char* type, unsigned_type max) const;
+        long double _getFloat(const char* type, long double max) const;
+
+        union U
+        {
+            char _s[sizeof(String) >= sizeof(std::string) ? sizeof(String) : sizeof(std::string)];
+            char _c;
+            bool _b;
+            int_type _i;
+            unsigned_type _u;
+            long double _f;
+        } _u;
+
+        String* _StringPtr()                    { return reinterpret_cast<String*>(_u._s); }
+        String& _String()                       { return *_StringPtr(); }
+        const String* _StringPtr() const        { return reinterpret_cast<const String*>(_u._s); }
+        const String& _String() const           { return *_StringPtr(); }
+        std::string* _String8Ptr()              { return reinterpret_cast<std::string*>(_u._s); }
+        std::string& _String8()                 { return *_String8Ptr(); }
+        const std::string* _String8Ptr() const  { return reinterpret_cast<const std::string*>(_u._s); }
+        const std::string& _String8() const     { return *_String8Ptr(); }
+
+        enum T
+        {
+          t_none,
+          t_string,
+          t_string8,
+          t_char,
+          t_bool,
+          t_int,
+          t_uint,
+          t_float
+        } _t;
+
         Nodes _nodes;             // objects/arrays
 };
 
@@ -303,6 +346,8 @@ class SerializationInfo::Iterator
         SerializationInfo* operator->();
 
         bool operator!=(const Iterator& other) const;
+
+        bool operator==(const Iterator& other) const;
 
     private:
         SerializationInfo* _info;
@@ -327,6 +372,8 @@ class SerializationInfo::ConstIterator
         const SerializationInfo* operator->() const;
 
         bool operator!=(const ConstIterator& other) const;
+
+        bool operator==(const ConstIterator& other) const;
 
     private:
         const SerializationInfo* _info;
@@ -380,6 +427,12 @@ inline bool SerializationInfo::Iterator::operator!=(const Iterator& other) const
 }
 
 
+inline bool SerializationInfo::Iterator::operator==(const Iterator& other) const
+{
+    return _info == other._info;
+}
+
+
 inline SerializationInfo::ConstIterator::ConstIterator()
 : _info(0)
 {}
@@ -427,6 +480,12 @@ inline bool SerializationInfo::ConstIterator::operator!=(const ConstIterator& ot
 }
 
 
+inline bool SerializationInfo::ConstIterator::operator==(const ConstIterator& other) const
+{
+    return _info == other._info;
+}
+
+
 inline void operator >>=(const SerializationInfo& si, SerializationInfo& ssi)
 {
     ssi = si;
@@ -441,7 +500,7 @@ inline void operator <<=(SerializationInfo& si, const SerializationInfo& ssi)
 
 inline void operator >>=(const SerializationInfo& si, bool& n)
 {
-    si.toValue(n);
+    si.getValue(n);
 }
 
 
@@ -454,7 +513,7 @@ inline void operator <<=(SerializationInfo& si, bool n)
 
 inline void operator >>=(const SerializationInfo& si, signed char& n)
 {
-    si.toValue(n);
+    si.getValue(n);
 }
 
 
@@ -467,7 +526,7 @@ inline void operator <<=(SerializationInfo& si, signed char n)
 
 inline void operator >>=(const SerializationInfo& si, unsigned char& n)
 {
-    si.toValue(n);
+    si.getValue(n);
 }
 
 
@@ -480,7 +539,7 @@ inline void operator <<=(SerializationInfo& si, unsigned char n)
 
 inline void operator >>=(const SerializationInfo& si, char& n)
 {
-    si.toValue(n);
+    si.getValue(n);
 }
 
 
@@ -493,7 +552,7 @@ inline void operator <<=(SerializationInfo& si, char n)
 
 inline void operator >>=(const SerializationInfo& si, short& n)
 {
-    si.toValue(n);
+    si.getValue(n);
 }
 
 
@@ -506,7 +565,7 @@ inline void operator <<=(SerializationInfo& si, short n)
 
 inline void operator >>=(const SerializationInfo& si, unsigned short& n)
 {
-    si.toValue(n);
+    si.getValue(n);
 }
 
 
@@ -519,7 +578,7 @@ inline void operator <<=(SerializationInfo& si, unsigned short n)
 
 inline void operator >>=(const SerializationInfo& si, int& n)
 {
-    si.toValue(n);
+    si.getValue(n);
 }
 
 
@@ -532,7 +591,7 @@ inline void operator <<=(SerializationInfo& si, int n)
 
 inline void operator >>=(const SerializationInfo& si, unsigned int& n)
 {
-    si.toValue(n);
+    si.getValue(n);
 }
 
 
@@ -545,7 +604,7 @@ inline void operator <<=(SerializationInfo& si, unsigned int n)
 
 inline void operator >>=(const SerializationInfo& si, long& n)
 {
-    si.toValue(n);
+    si.getValue(n);
 }
 
 
@@ -558,7 +617,7 @@ inline void operator <<=(SerializationInfo& si, long n)
 
 inline void operator >>=(const SerializationInfo& si, unsigned long& n)
 {
-    si.toValue(n);
+    si.getValue(n);
 }
 
 
@@ -573,7 +632,7 @@ inline void operator <<=(SerializationInfo& si, unsigned long n)
 
 inline void operator >>=(const SerializationInfo& si, long long& n)
 {
-    si.toValue(n);
+    si.getValue(n);
 }
 
 
@@ -590,7 +649,7 @@ inline void operator <<=(SerializationInfo& si, long long n)
 
 inline void operator >>=(const SerializationInfo& si, unsigned long long& n)
 {
-    si.toValue(n);
+    si.getValue(n);
 }
 
 
@@ -605,7 +664,7 @@ inline void operator <<=(SerializationInfo& si, unsigned long long n)
 
 inline void operator >>=(const SerializationInfo& si, float& n)
 {
-    si.toValue<float>(n);
+    si.getValue(n);
 }
 
 
@@ -618,7 +677,7 @@ inline void operator <<=(SerializationInfo& si, float n)
 
 inline void operator >>=(const SerializationInfo& si, double& n)
 {
-    si.toValue<double>(n);
+    si.getValue(n);
 }
 
 
@@ -631,7 +690,7 @@ inline void operator <<=(SerializationInfo& si, double n)
 
 inline void operator >>=(const SerializationInfo& si, std::string& n)
 {
-    si.toValue<std::string>(n);
+    si.getValue(n);
 }
 
 
@@ -651,7 +710,7 @@ inline void operator <<=(SerializationInfo& si, const char* n)
 
 inline void operator >>=(const SerializationInfo& si, cxxtools::String& n)
 {
-    si.toValue<cxxtools::String>(n);
+    si.getValue(n);
 }
 
 
@@ -666,6 +725,7 @@ template <typename T, typename A>
 inline void operator >>=(const SerializationInfo& si, std::vector<T, A>& vec)
 {
     vec.clear();
+    vec.reserve(si.memberCount());
     for(SerializationInfo::ConstIterator it = si.begin(); it != si.end(); ++it)
     {
         vec.resize( vec.size() + 1 );
@@ -679,6 +739,7 @@ inline void operator <<=(SerializationInfo& si, const std::vector<T, A>& vec)
 {
     typename std::vector<T, A>::const_iterator it;
 
+    si.reserve(vec.size());
     for(it = vec.begin(); it != vec.end(); ++it)
     {
         SerializationInfo& newSi = si.addMember(std::string());

@@ -30,11 +30,11 @@
 #define cxxtools_BasicTextStream_h
 
 #include <cxxtools/api.h>
-#include <cxxtools/string.h>
 #include <cxxtools/textbuffer.h>
 #include <iostream>
 
-namespace cxxtools {
+namespace cxxtools
+{
 
 /** @brief Converts character sequences using a Codec.
 
@@ -84,14 +84,15 @@ class BasicTextIStream : public std::basic_istream<CharT>
         : std::basic_istream<intern_type>(0)
         , _buffer( &is, codec )
         {
-            init(&_buffer);
+            std::basic_istream<CharT>::init(&_buffer);
+            std::basic_istream<CharT>::exceptions(is.exceptions());
         }
 
         explicit BasicTextIStream(CodecType* codec)
         : std::basic_istream<intern_type>(0)
         , _buffer( 0, codec )
         {
-            init(&_buffer);
+            std::basic_istream<CharT>::init(&_buffer);
         }
 
         //! @brief Deletes to codec.
@@ -102,6 +103,7 @@ class BasicTextIStream : public std::basic_istream<CharT>
         {
             _buffer.attach( is );
             this->clear();
+            std::basic_istream<CharT>::exceptions(is.exceptions());
         }
 
         void detach()
@@ -170,12 +172,15 @@ class BasicTextOStream : public std::basic_ostream<CharT>
         BasicTextOStream(StreamType& os, CodecType* codec)
         : std::basic_ostream<intern_type>(0)
         , _buffer( &os , codec )
-        { init(&_buffer); }
+        {
+            std::basic_ostream<CharT>::init(&_buffer);
+            std::basic_ostream<CharT>::exceptions(os.exceptions());
+        }
 
         explicit BasicTextOStream(CodecType* codec)
         : std::basic_ostream<intern_type>(0)
         , _buffer( 0 , codec )
-        { init(&_buffer); }
+        { std::basic_ostream<CharT>::init(&_buffer); }
 
         //! @brief Deletes to codec.
         ~BasicTextOStream()
@@ -184,6 +189,7 @@ class BasicTextOStream : public std::basic_ostream<CharT>
         void attach(StreamType& os)
         {
             _buffer.attach( os );
+            std::basic_ostream<CharT>::exceptions(os.exceptions());
             this->clear();
         }
 
@@ -253,12 +259,15 @@ class BasicTextStream : public std::basic_iostream<CharT>
         BasicTextStream(StreamType& ios, CodecType* codec)
         : std::basic_iostream<intern_type>(0)
         , _buffer( &ios, codec)
-        { init(&_buffer); }
+        {
+            std::basic_iostream<CharT>::init(&_buffer);
+            std::basic_iostream<CharT>::exceptions(ios.exceptions());
+        }
 
         explicit BasicTextStream(CodecType* codec)
         : std::basic_iostream<intern_type>(0)
         , _buffer(0, codec)
-        { init(&_buffer); }
+        { std::basic_iostream<CharT>::init(&_buffer); }
 
         //! @brief Deletes the codec.
         ~BasicTextStream()
@@ -268,6 +277,7 @@ class BasicTextStream : public std::basic_iostream<CharT>
         {
             _buffer.attach( ios );
             this->clear();
+            std::basic_iostream<CharT>::exceptions(ios.exceptions());
         }
 
         void detach()
@@ -356,6 +366,18 @@ class CXXTOOLS_API TextStream : public BasicTextStream<Char, char>
 
         ~TextStream();
 };
+
+inline std::basic_ostream<Char>& operator<< (std::basic_ostream<Char>& out, wchar_t ch)
+{
+    return out << Char(ch);
+}
+
+inline std::basic_ostream<Char>& operator<< (std::basic_ostream<Char>& out, const wchar_t* str)
+{
+    while (*str)
+        out << Char(*str++);
+    return out;
+}
 
 } // namespace cxxtools
 

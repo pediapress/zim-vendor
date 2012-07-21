@@ -30,8 +30,20 @@
 #include "cxxtools/unit/testsuite.h"
 #include "cxxtools/unit/registertest.h"
 #include "cxxtools/string.h"
+#include "cxxtools/log.h"
 #include <limits>
 #include <string.h>
+
+log_define("cxxtools.test.convert")
+
+namespace
+{
+    bool nearBy(double v1, double v2, double e = 1e-6)
+    {
+        double q = v1 / v2;
+        return q > 1 - e && q < 1 + e;
+    }
+}
 
 class ConvertTest : public cxxtools::unit::TestSuite
 {
@@ -43,6 +55,8 @@ class ConvertTest : public cxxtools::unit::TestSuite
             registerMethod("failTest", *this, &ConvertTest::failTest);
             registerMethod("nanTest", *this, &ConvertTest::nanTest);
             registerMethod("infTest", *this, &ConvertTest::infTest);
+            registerMethod("emptyTest", *this, &ConvertTest::emptyTest);
+            registerMethod("floatTest", *this, &ConvertTest::floatTest);
         }
 
         void successTest()
@@ -73,6 +87,8 @@ class ConvertTest : public cxxtools::unit::TestSuite
         {
           // test string to number
 
+          // test nan
+
           double d = cxxtools::convert<double>(std::string("NaN"));
           CXXTOOLS_UNIT_ASSERT(d != d);
 
@@ -84,6 +100,36 @@ class ConvertTest : public cxxtools::unit::TestSuite
 
           f = cxxtools::convert<float>(cxxtools::String(L"NaN"));
           CXXTOOLS_UNIT_ASSERT(f != f);
+
+          // test quiet nan
+
+          d = cxxtools::convert<double>(std::string("NaNQ"));
+          CXXTOOLS_UNIT_ASSERT(d != d);
+
+          f = cxxtools::convert<float>(std::string("NaNQ"));
+          CXXTOOLS_UNIT_ASSERT(f != f);
+
+          d = cxxtools::convert<double>(cxxtools::String(L"NaNQ"));
+          CXXTOOLS_UNIT_ASSERT(d != d);
+
+          f = cxxtools::convert<float>(cxxtools::String(L"NaNQ"));
+          CXXTOOLS_UNIT_ASSERT(f != f);
+
+          // test signaling nan
+
+          d = cxxtools::convert<double>(std::string("NaNS"));
+          CXXTOOLS_UNIT_ASSERT(d != d);
+
+          f = cxxtools::convert<float>(std::string("NaNS"));
+          CXXTOOLS_UNIT_ASSERT(f != f);
+
+          d = cxxtools::convert<double>(cxxtools::String(L"NaNS"));
+          CXXTOOLS_UNIT_ASSERT(d != d);
+
+          f = cxxtools::convert<float>(cxxtools::String(L"NaNS"));
+          CXXTOOLS_UNIT_ASSERT(f != f);
+
+          CXXTOOLS_UNIT_ASSERT_THROW(cxxtools::convert<float>(cxxtools::String(L"NaNF")), cxxtools::ConversionError);
 
           // test number to string
 
@@ -162,6 +208,78 @@ class ConvertTest : public cxxtools::unit::TestSuite
           ss = cxxtools::convert<cxxtools::String>(f);
           CXXTOOLS_UNIT_ASSERT(strcasecmp(ss.narrow().c_str(), "-inf") == 0);
 
+        }
+
+        void emptyTest()
+        {
+          std::string emptyString;
+          CXXTOOLS_UNIT_ASSERT_THROW(cxxtools::convert<int>(std::string()), cxxtools::ConversionError);
+          CXXTOOLS_UNIT_ASSERT_THROW(cxxtools::convert<int>(cxxtools::String()), cxxtools::ConversionError);
+          CXXTOOLS_UNIT_ASSERT_THROW(cxxtools::convert<unsigned>(std::string()), cxxtools::ConversionError);
+          CXXTOOLS_UNIT_ASSERT_THROW(cxxtools::convert<unsigned>(cxxtools::String()), cxxtools::ConversionError);
+          CXXTOOLS_UNIT_ASSERT_THROW(cxxtools::convert<double>(std::string()), cxxtools::ConversionError);
+          CXXTOOLS_UNIT_ASSERT_THROW(cxxtools::convert<double>(cxxtools::String()), cxxtools::ConversionError);
+        }
+
+        void t(double d)
+        {
+          std::string s = cxxtools::convert<std::string>(d);
+          double r = cxxtools::convert<double>(s);
+          if (r == 0)
+          {
+            CXXTOOLS_UNIT_ASSERT_EQUALS(d, 0);
+          }
+          else
+          {
+            double q = d / r;
+            log_debug("d=" << d << " s=\"" << s << "\" r=" << r << " q=" << q);
+            if (q < 0.999999999999 || q > 1.0000000000001)
+            {
+              CXXTOOLS_UNIT_ASSERT_EQUALS(d, r);
+            }
+          }
+        }
+
+        void floatTest()
+        {
+          double d;
+
+          d = cxxtools::convert<double>("1.5");
+          CXXTOOLS_UNIT_ASSERT_EQUALS(d, 1.5);
+
+          d = cxxtools::convert<double>(" -345.75 ");
+          CXXTOOLS_UNIT_ASSERT_EQUALS(d, -345.75);
+
+          d = cxxtools::convert<double>("\n1e6\r");
+          CXXTOOLS_UNIT_ASSERT_EQUALS(d, 1e6);
+
+          d = cxxtools::convert<double>("7.0e4");
+          CXXTOOLS_UNIT_ASSERT_EQUALS(d, 7e4);
+
+          d = cxxtools::convert<double>("-2e-3");
+          CXXTOOLS_UNIT_ASSERT(nearBy(d, -2e-3));
+
+          d = cxxtools::convert<double>("-8E-5");
+          CXXTOOLS_UNIT_ASSERT(nearBy(d, -8e-5));
+
+          d = cxxtools::convert<double>("-3.0e-12");
+          CXXTOOLS_UNIT_ASSERT(nearBy(d, -3e-12));
+
+          d = cxxtools::convert<double>("-8.5E-23");
+          CXXTOOLS_UNIT_ASSERT(nearBy(d, -8.5e-23));
+
+          t(3.141592653579893);
+          t(0.314);
+          t(0.0314);
+          t(0.00123);
+          t(123456789.55555555);
+          t(0);
+          t(1);
+          t(1.4567e17);
+          t(12345);
+          t(1.4567e-17);
+          t(0.2);
+          t(12);
         }
 
 };

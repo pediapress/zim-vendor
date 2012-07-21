@@ -89,10 +89,12 @@ DIST_COMMON = $(am__nobase_include_HEADERS_DIST) $(srcdir)/Makefile.am \
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/acx_pthread.m4 \
 	$(top_srcdir)/m4/asmtype.m4 \
-	$(top_srcdir)/m4/cxxtools_logging.m4 $(top_srcdir)/m4/iconv.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.in
+	$(top_srcdir)/m4/ax_check_compile_flag.m4 \
+	$(top_srcdir)/m4/ax_compiler_vendor.m4 \
+	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -105,32 +107,43 @@ am__nobase_include_HEADERS_DIST = cxxtools/allocator.h \
 	cxxtools/application.h cxxtools/arg.h cxxtools/argin.h \
 	cxxtools/argout.h cxxtools/atomicity.h cxxtools/api.h \
 	cxxtools/base64codec.h cxxtools/base64stream.h \
-	cxxtools/bindeserializer.h cxxtools/binserializer.h \
+	cxxtools/bin/formatter.h cxxtools/bin/serializer.h \
+	cxxtools/bin/deserializer.h cxxtools/bin/rpcclient.h \
+	cxxtools/bin/rpcserver.h cxxtools/bin/valueparser.h \
 	cxxtools/byteorder.h cxxtools/cache.h cxxtools/callable.h \
-	cxxtools/callable.tpp cxxtools/char.h cxxtools/cgi.h \
-	cxxtools/clock.h cxxtools/condition.h cxxtools/connectable.h \
-	cxxtools/connection.h cxxtools/constmethod.h \
-	cxxtools/constmethod.tpp cxxtools/conversionerror.h \
-	cxxtools/convert.h cxxtools/date.h cxxtools/datetime.h \
-	cxxtools/delegate.h cxxtools/delegate.tpp \
-	cxxtools/deserializer.h cxxtools/dir.h cxxtools/directory.h \
-	cxxtools/dlloader.h cxxtools/event.h cxxtools/eventloop.h \
-	cxxtools/eventsink.h cxxtools/eventsource.h cxxtools/facets.h \
-	cxxtools/fdstream.h cxxtools/formatter.h cxxtools/file.h \
-	cxxtools/fileinfo.h cxxtools/function.h cxxtools/function.tpp \
-	cxxtools/hdstream.h cxxtools/http/api.h cxxtools/http/client.h \
+	cxxtools/callable.tpp cxxtools/composer.h \
+	cxxtools/csvdeserializer.h cxxtools/csvformatter.h \
+	cxxtools/csvparser.h cxxtools/csvserializer.h cxxtools/char.h \
+	cxxtools/cgi.h cxxtools/clock.h cxxtools/condition.h \
+	cxxtools/connectable.h cxxtools/connection.h \
+	cxxtools/constmethod.h cxxtools/constmethod.tpp \
+	cxxtools/conversionerror.h cxxtools/convert.h cxxtools/date.h \
+	cxxtools/datetime.h cxxtools/decomposer.h cxxtools/delegate.h \
+	cxxtools/delegate.tpp cxxtools/deserializer.h \
+	cxxtools/deserializerbase.h cxxtools/dir.h \
+	cxxtools/directory.h cxxtools/dlloader.h cxxtools/event.h \
+	cxxtools/eventloop.h cxxtools/eventsink.h \
+	cxxtools/eventsource.h cxxtools/facets.h cxxtools/fdstream.h \
+	cxxtools/formatter.h cxxtools/file.h cxxtools/fileinfo.h \
+	cxxtools/function.h cxxtools/function.tpp cxxtools/hdstream.h \
+	cxxtools/hmac.h cxxtools/http/api.h cxxtools/http/client.h \
 	cxxtools/http/messageheader.h cxxtools/http/reply.h \
 	cxxtools/http/replyheader.h cxxtools/http/request.h \
 	cxxtools/http/requestheader.h cxxtools/http/server.h \
 	cxxtools/http/service.h cxxtools/http/responder.h \
 	cxxtools/inifile.h cxxtools/iniparser.h cxxtools/invokable.h \
 	cxxtools/invokable.tpp cxxtools/ioerror.h cxxtools/iodevice.h \
-	cxxtools/iostream.h cxxtools/join.h cxxtools/jsonserializer.h \
-	cxxtools/library.h cxxtools/log.h cxxtools/loginit.h \
-	cxxtools/main.h cxxtools/md5.h cxxtools/md5stream.h \
-	cxxtools/membar.gcc.h cxxtools/membar.gcc.nosmp.h \
-	cxxtools/membar.h cxxtools/method.h cxxtools/method.tpp \
-	cxxtools/mime.h cxxtools/multifstream.h cxxtools/mutex.h \
+	cxxtools/iostream.h cxxtools/join.h cxxtools/json/httpclient.h \
+	cxxtools/json/httpservice.h cxxtools/json/request.h \
+	cxxtools/json/responder.h cxxtools/json/rpcclient.h \
+	cxxtools/json/rpcserver.h cxxtools/jsondeserializer.h \
+	cxxtools/jsonformatter.h cxxtools/jsonparser.h \
+	cxxtools/jsonserializer.h cxxtools/library.h cxxtools/log.h \
+	cxxtools/loginit.h cxxtools/main.h cxxtools/md5.h \
+	cxxtools/md5stream.h cxxtools/membar.gcc.h \
+	cxxtools/membar.gcc.nosmp.h cxxtools/membar.h \
+	cxxtools/method.h cxxtools/method.tpp cxxtools/mime.h \
+	cxxtools/multifstream.h cxxtools/mutex.h \
 	cxxtools/net/addrinfo.h cxxtools/net/net.h \
 	cxxtools/net/tcpserver.h cxxtools/net/tcpsocket.h \
 	cxxtools/net/tcpstream.h cxxtools/net/udp.h \
@@ -141,9 +154,12 @@ am__nobase_include_HEADERS_DIST = cxxtools/allocator.h \
 	cxxtools/posix/pipe.h cxxtools/posix/pipestream.h \
 	cxxtools/properties.h cxxtools/query_params.h cxxtools/queue.h \
 	cxxtools/quotedprintablestream.h cxxtools/refcounted.h \
-	cxxtools/regex.h cxxtools/selector.h cxxtools/selectable.h \
-	cxxtools/semaphore.h cxxtools/serializationerror.h \
-	cxxtools/serializationinfo.h cxxtools/serializer.h \
+	cxxtools/regex.h cxxtools/remoteclient.h \
+	cxxtools/remoteexception.h cxxtools/remoteprocedure.h \
+	cxxtools/remoteresult.h cxxtools/selector.h \
+	cxxtools/selectable.h cxxtools/semaphore.h \
+	cxxtools/serializationerror.h cxxtools/serializationinfo.h \
+	cxxtools/serviceprocedure.h cxxtools/serviceregistry.h \
 	cxxtools/settings.h cxxtools/split.h cxxtools/signal.h \
 	cxxtools/signal.tpp cxxtools/singleton.h cxxtools/slot.h \
 	cxxtools/slot.tpp cxxtools/smartptr.h cxxtools/sourceinfo.h \
@@ -153,12 +169,9 @@ am__nobase_include_HEADERS_DIST = cxxtools/allocator.h \
 	cxxtools/textcodec.h cxxtools/textstream.h cxxtools/thread.h \
 	cxxtools/threadpool.h cxxtools/time.h cxxtools/timer.h \
 	cxxtools/timespan.h cxxtools/trim.h cxxtools/typetraits.h \
-	cxxtools/types.h cxxtools/utf8codec.h cxxtools/uuencode.h \
-	cxxtools/void.h cxxtools/xmltag.h cxxtools/log/cxxtools.h \
-	cxxtools/log/cxxtools_init.h cxxtools/log/disable.h \
-	cxxtools/log/disable_init.h cxxtools/log/log4cplus.h \
-	cxxtools/log/log4cplus_init.h cxxtools/log/log4cxx.h \
-	cxxtools/log/log4cxx_init.h cxxtools/unit/application.h \
+	cxxtools/utf8codec.h cxxtools/uuencode.h cxxtools/void.h \
+	cxxtools/xmltag.h cxxtools/log/cxxtools.h \
+	cxxtools/log/cxxtools_init.h cxxtools/unit/application.h \
 	cxxtools/unit/assertion.h cxxtools/unit/registertest.h \
 	cxxtools/unit/reporter.h cxxtools/unit/test.h \
 	cxxtools/unit/testcase.h cxxtools/unit/testcontext.h \
@@ -171,23 +184,22 @@ am__nobase_include_HEADERS_DIST = cxxtools/allocator.h \
 	cxxtools/xml/namespace.h cxxtools/xml/namespacecontext.h \
 	cxxtools/xml/node.h cxxtools/xml/processinginstruction.h \
 	cxxtools/xml/startelement.h cxxtools/xml/xmlerror.h \
-	cxxtools/xml/xmldeserializer.h cxxtools/xml/xmlreader.h \
-	cxxtools/xml/xmlserializer.h cxxtools/xml/xmlwriter.h \
-	cxxtools/xmlrpc/api.h cxxtools/xmlrpc/client.h \
-	cxxtools/xmlrpc/httpclient.h cxxtools/xmlrpc/fault.h \
-	cxxtools/xmlrpc/formatter.h cxxtools/xmlrpc/remoteprocedure.h \
-	cxxtools/xmlrpc/responder.h cxxtools/xmlrpc/result.h \
-	cxxtools/xmlrpc/scanner.h cxxtools/xmlrpc/service.h \
-	cxxtools/iconverter.h cxxtools/iconvstream.h \
-	cxxtools/membar.sun.h cxxtools/atomicity.sun.h \
-	cxxtools/membar.windows.h cxxtools/atomicity.windows.h \
-	cxxtools/membar.gcc.arm.h cxxtools/atomicity.gcc.arm.h \
-	cxxtools/membar.gcc.mips.h cxxtools/atomicity.gcc.mips.h \
-	cxxtools/membar.gcc.ppc.h cxxtools/atomicity.gcc.ppc.h \
-	cxxtools/membar.gcc.x86.h cxxtools/atomicity.gcc.x86_64.h \
-	cxxtools/atomicity.gcc.x86.h cxxtools/membar.gcc.sparc32.h \
-	cxxtools/atomicity.gcc.sparc32.h cxxtools/membar.gcc.sparc64.h \
-	cxxtools/atomicity.gcc.sparc64.h \
+	cxxtools/xml/xmlformatter.h cxxtools/xml/xmldeserializer.h \
+	cxxtools/xml/xmlreader.h cxxtools/xml/xmlserializer.h \
+	cxxtools/xml/xmlwriter.h cxxtools/xmlrpc/api.h \
+	cxxtools/xmlrpc/client.h cxxtools/xmlrpc/errorcodes.h \
+	cxxtools/xmlrpc/httpclient.h cxxtools/xmlrpc/formatter.h \
+	cxxtools/xmlrpc/responder.h cxxtools/xmlrpc/scanner.h \
+	cxxtools/xmlrpc/service.h cxxtools/iconverter.h \
+	cxxtools/iconvstream.h cxxtools/membar.sun.h \
+	cxxtools/atomicity.sun.h cxxtools/membar.windows.h \
+	cxxtools/atomicity.windows.h cxxtools/membar.gcc.arm.h \
+	cxxtools/atomicity.gcc.arm.h cxxtools/membar.gcc.mips.h \
+	cxxtools/atomicity.gcc.mips.h cxxtools/membar.gcc.ppc.h \
+	cxxtools/atomicity.gcc.ppc.h cxxtools/membar.gcc.x86.h \
+	cxxtools/atomicity.gcc.x86_64.h cxxtools/atomicity.gcc.x86.h \
+	cxxtools/membar.gcc.sparc32.h cxxtools/atomicity.gcc.sparc32.h \
+	cxxtools/membar.gcc.sparc64.h cxxtools/atomicity.gcc.sparc64.h \
 	cxxtools/atomicity.gcc.avr32.h cxxtools/atomicity.pthread.h \
 	cxxtools/atomicity.generic.h
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -234,7 +246,6 @@ CXXFLAGS = @CXXFLAGS@
 CXXTOOLS_ATOMICITY = @CXXTOOLS_ATOMICITY@
 CXXTOOLS_CXXFLAGS = @CXXTOOLS_CXXFLAGS@
 CXXTOOLS_LDFLAGS = @CXXTOOLS_LDFLAGS@
-CXXTOOLS_LOGGING = @CXXTOOLS_LOGGING@
 CXXTOOLS_STD_LOCALE = @CXXTOOLS_STD_LOCALE@
 CXXTOOLS_SUSECONDS = @CXXTOOLS_SUSECONDS@
 CYGPATH_W = @CYGPATH_W@
@@ -269,7 +280,6 @@ LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBICONV = @LTLIBICONV@
 LTLIBOBJS = @LTLIBOBJS@
-MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -298,7 +308,6 @@ SET_MAKE = @SET_MAKE@
 SHARED_LIB_FLAG = @SHARED_LIB_FLAG@
 SHELL = @SHELL@
 STRIP = @STRIP@
-TESTDIR = @TESTDIR@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -358,32 +367,44 @@ top_srcdir = @top_srcdir@
 nobase_include_HEADERS = cxxtools/allocator.h cxxtools/application.h \
 	cxxtools/arg.h cxxtools/argin.h cxxtools/argout.h \
 	cxxtools/atomicity.h cxxtools/api.h cxxtools/base64codec.h \
-	cxxtools/base64stream.h cxxtools/bindeserializer.h \
-	cxxtools/binserializer.h cxxtools/byteorder.h cxxtools/cache.h \
-	cxxtools/callable.h cxxtools/callable.tpp cxxtools/char.h \
-	cxxtools/cgi.h cxxtools/clock.h cxxtools/condition.h \
-	cxxtools/connectable.h cxxtools/connection.h \
-	cxxtools/constmethod.h cxxtools/constmethod.tpp \
-	cxxtools/conversionerror.h cxxtools/convert.h cxxtools/date.h \
-	cxxtools/datetime.h cxxtools/delegate.h cxxtools/delegate.tpp \
-	cxxtools/deserializer.h cxxtools/dir.h cxxtools/directory.h \
-	cxxtools/dlloader.h cxxtools/event.h cxxtools/eventloop.h \
-	cxxtools/eventsink.h cxxtools/eventsource.h cxxtools/facets.h \
-	cxxtools/fdstream.h cxxtools/formatter.h cxxtools/file.h \
-	cxxtools/fileinfo.h cxxtools/function.h cxxtools/function.tpp \
-	cxxtools/hdstream.h cxxtools/http/api.h cxxtools/http/client.h \
+	cxxtools/base64stream.h cxxtools/bin/formatter.h \
+	cxxtools/bin/serializer.h cxxtools/bin/deserializer.h \
+	cxxtools/bin/rpcclient.h cxxtools/bin/rpcserver.h \
+	cxxtools/bin/valueparser.h cxxtools/byteorder.h \
+	cxxtools/cache.h cxxtools/callable.h cxxtools/callable.tpp \
+	cxxtools/composer.h cxxtools/csvdeserializer.h \
+	cxxtools/csvformatter.h cxxtools/csvparser.h \
+	cxxtools/csvserializer.h cxxtools/char.h cxxtools/cgi.h \
+	cxxtools/clock.h cxxtools/condition.h cxxtools/connectable.h \
+	cxxtools/connection.h cxxtools/constmethod.h \
+	cxxtools/constmethod.tpp cxxtools/conversionerror.h \
+	cxxtools/convert.h cxxtools/date.h cxxtools/datetime.h \
+	cxxtools/decomposer.h cxxtools/delegate.h \
+	cxxtools/delegate.tpp cxxtools/deserializer.h \
+	cxxtools/deserializerbase.h cxxtools/dir.h \
+	cxxtools/directory.h cxxtools/dlloader.h cxxtools/event.h \
+	cxxtools/eventloop.h cxxtools/eventsink.h \
+	cxxtools/eventsource.h cxxtools/facets.h cxxtools/fdstream.h \
+	cxxtools/formatter.h cxxtools/file.h cxxtools/fileinfo.h \
+	cxxtools/function.h cxxtools/function.tpp cxxtools/hdstream.h \
+	cxxtools/hmac.h cxxtools/http/api.h cxxtools/http/client.h \
 	cxxtools/http/messageheader.h cxxtools/http/reply.h \
 	cxxtools/http/replyheader.h cxxtools/http/request.h \
 	cxxtools/http/requestheader.h cxxtools/http/server.h \
 	cxxtools/http/service.h cxxtools/http/responder.h \
 	cxxtools/inifile.h cxxtools/iniparser.h cxxtools/invokable.h \
 	cxxtools/invokable.tpp cxxtools/ioerror.h cxxtools/iodevice.h \
-	cxxtools/iostream.h cxxtools/join.h cxxtools/jsonserializer.h \
-	cxxtools/library.h cxxtools/log.h cxxtools/loginit.h \
-	cxxtools/main.h cxxtools/md5.h cxxtools/md5stream.h \
-	cxxtools/membar.gcc.h cxxtools/membar.gcc.nosmp.h \
-	cxxtools/membar.h cxxtools/method.h cxxtools/method.tpp \
-	cxxtools/mime.h cxxtools/multifstream.h cxxtools/mutex.h \
+	cxxtools/iostream.h cxxtools/join.h cxxtools/json/httpclient.h \
+	cxxtools/json/httpservice.h cxxtools/json/request.h \
+	cxxtools/json/responder.h cxxtools/json/rpcclient.h \
+	cxxtools/json/rpcserver.h cxxtools/jsondeserializer.h \
+	cxxtools/jsonformatter.h cxxtools/jsonparser.h \
+	cxxtools/jsonserializer.h cxxtools/library.h cxxtools/log.h \
+	cxxtools/loginit.h cxxtools/main.h cxxtools/md5.h \
+	cxxtools/md5stream.h cxxtools/membar.gcc.h \
+	cxxtools/membar.gcc.nosmp.h cxxtools/membar.h \
+	cxxtools/method.h cxxtools/method.tpp cxxtools/mime.h \
+	cxxtools/multifstream.h cxxtools/mutex.h \
 	cxxtools/net/addrinfo.h cxxtools/net/net.h \
 	cxxtools/net/tcpserver.h cxxtools/net/tcpsocket.h \
 	cxxtools/net/tcpstream.h cxxtools/net/udp.h \
@@ -394,9 +415,12 @@ nobase_include_HEADERS = cxxtools/allocator.h cxxtools/application.h \
 	cxxtools/posix/pipe.h cxxtools/posix/pipestream.h \
 	cxxtools/properties.h cxxtools/query_params.h cxxtools/queue.h \
 	cxxtools/quotedprintablestream.h cxxtools/refcounted.h \
-	cxxtools/regex.h cxxtools/selector.h cxxtools/selectable.h \
-	cxxtools/semaphore.h cxxtools/serializationerror.h \
-	cxxtools/serializationinfo.h cxxtools/serializer.h \
+	cxxtools/regex.h cxxtools/remoteclient.h \
+	cxxtools/remoteexception.h cxxtools/remoteprocedure.h \
+	cxxtools/remoteresult.h cxxtools/selector.h \
+	cxxtools/selectable.h cxxtools/semaphore.h \
+	cxxtools/serializationerror.h cxxtools/serializationinfo.h \
+	cxxtools/serviceprocedure.h cxxtools/serviceregistry.h \
 	cxxtools/settings.h cxxtools/split.h cxxtools/signal.h \
 	cxxtools/signal.tpp cxxtools/singleton.h cxxtools/slot.h \
 	cxxtools/slot.tpp cxxtools/smartptr.h cxxtools/sourceinfo.h \
@@ -406,12 +430,9 @@ nobase_include_HEADERS = cxxtools/allocator.h cxxtools/application.h \
 	cxxtools/textcodec.h cxxtools/textstream.h cxxtools/thread.h \
 	cxxtools/threadpool.h cxxtools/time.h cxxtools/timer.h \
 	cxxtools/timespan.h cxxtools/trim.h cxxtools/typetraits.h \
-	cxxtools/types.h cxxtools/utf8codec.h cxxtools/uuencode.h \
-	cxxtools/void.h cxxtools/xmltag.h cxxtools/log/cxxtools.h \
-	cxxtools/log/cxxtools_init.h cxxtools/log/disable.h \
-	cxxtools/log/disable_init.h cxxtools/log/log4cplus.h \
-	cxxtools/log/log4cplus_init.h cxxtools/log/log4cxx.h \
-	cxxtools/log/log4cxx_init.h cxxtools/unit/application.h \
+	cxxtools/utf8codec.h cxxtools/uuencode.h cxxtools/void.h \
+	cxxtools/xmltag.h cxxtools/log/cxxtools.h \
+	cxxtools/log/cxxtools_init.h cxxtools/unit/application.h \
 	cxxtools/unit/assertion.h cxxtools/unit/registertest.h \
 	cxxtools/unit/reporter.h cxxtools/unit/test.h \
 	cxxtools/unit/testcase.h cxxtools/unit/testcontext.h \
@@ -424,25 +445,24 @@ nobase_include_HEADERS = cxxtools/allocator.h cxxtools/application.h \
 	cxxtools/xml/namespace.h cxxtools/xml/namespacecontext.h \
 	cxxtools/xml/node.h cxxtools/xml/processinginstruction.h \
 	cxxtools/xml/startelement.h cxxtools/xml/xmlerror.h \
-	cxxtools/xml/xmldeserializer.h cxxtools/xml/xmlreader.h \
-	cxxtools/xml/xmlserializer.h cxxtools/xml/xmlwriter.h \
-	cxxtools/xmlrpc/api.h cxxtools/xmlrpc/client.h \
-	cxxtools/xmlrpc/httpclient.h cxxtools/xmlrpc/fault.h \
-	cxxtools/xmlrpc/formatter.h cxxtools/xmlrpc/remoteprocedure.h \
-	cxxtools/xmlrpc/responder.h cxxtools/xmlrpc/result.h \
-	cxxtools/xmlrpc/scanner.h cxxtools/xmlrpc/service.h \
-	$(am__append_1) $(am__append_2) $(am__append_3) \
-	$(am__append_4) $(am__append_5) $(am__append_6) \
-	$(am__append_7) $(am__append_8) $(am__append_9) \
-	$(am__append_10) $(am__append_11) $(am__append_12) \
-	$(am__append_13)
+	cxxtools/xml/xmlformatter.h cxxtools/xml/xmldeserializer.h \
+	cxxtools/xml/xmlreader.h cxxtools/xml/xmlserializer.h \
+	cxxtools/xml/xmlwriter.h cxxtools/xmlrpc/api.h \
+	cxxtools/xmlrpc/client.h cxxtools/xmlrpc/errorcodes.h \
+	cxxtools/xmlrpc/httpclient.h cxxtools/xmlrpc/formatter.h \
+	cxxtools/xmlrpc/responder.h cxxtools/xmlrpc/scanner.h \
+	cxxtools/xmlrpc/service.h $(am__append_1) $(am__append_2) \
+	$(am__append_3) $(am__append_4) $(am__append_5) \
+	$(am__append_6) $(am__append_7) $(am__append_8) \
+	$(am__append_9) $(am__append_10) $(am__append_11) \
+	$(am__append_12) $(am__append_13)
 nobase_nodist_include_HEADERS = \
         cxxtools/config.h
 
 all: all-am
 
 .SUFFIXES:
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -467,9 +487,9 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 
-$(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
+$(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
+$(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 

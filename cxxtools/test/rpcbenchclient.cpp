@@ -29,8 +29,11 @@
 #include <iostream>
 #include <cxxtools/log.h>
 #include <cxxtools/arg.h>
-#include <cxxtools/xmlrpc/remoteprocedure.h>
+#include <cxxtools/remoteprocedure.h>
 #include <cxxtools/xmlrpc/httpclient.h>
+#include <cxxtools/bin/rpcclient.h>
+#include <cxxtools/json/rpcclient.h>
+#include <cxxtools/json/httpclient.h>
 #include <cxxtools/thread.h>
 #include <cxxtools/mutex.h>
 #include <cxxtools/clock.h>
@@ -41,28 +44,35 @@ class BenchClient
 {
     void exec();
 
-    cxxtools::xmlrpc::HttpClient client;
-    cxxtools::xmlrpc::RemoteProcedure<std::string, std::string> echo;
+    cxxtools::RemoteClient* client;
     cxxtools::AttachedThread thread;
 
     static unsigned _numRequests;
+    static unsigned _vectorSize;
     static cxxtools::atomic_t _requestsStarted;
     static cxxtools::atomic_t _requestsFinished;
     static cxxtools::atomic_t _requestsFailed;
 
   public:
-
-    explicit BenchClient(unsigned short port)
-      : client("", port, "/myservice"),
-        echo(client, "echo"),
+    explicit BenchClient(cxxtools::RemoteClient* client_)
+      : client(client_),
         thread(cxxtools::callable(*this, &BenchClient::exec))
     { }
+
+    ~BenchClient()
+    { delete client; }
 
     static unsigned numRequests()
     { return _numRequests; }
 
     static void numRequests(unsigned n)
     { _numRequests = n; }
+
+    static unsigned vectorSize()
+    { return _vectorSize; }
+
+    static void vectorSize(unsigned n)
+    { _vectorSize = n; }
 
     static unsigned requestsStarted()
     { return static_cast<unsigned>(cxxtools::atomicGet(_requestsStarted)); }
@@ -84,24 +94,46 @@ cxxtools::atomic_t BenchClient::_requestsStarted(0);
 cxxtools::atomic_t BenchClient::_requestsFinished(0);
 cxxtools::atomic_t BenchClient::_requestsFailed(0);
 unsigned BenchClient::_numRequests = 0;
+unsigned BenchClient::_vectorSize = 0;
 typedef std::vector<BenchClient*> BenchClients;
 
 static cxxtools::Mutex mutex;
 
 void BenchClient::exec()
 {
+  cxxtools::RemoteProcedure<std::string, std::string> echo(*client, "echo");
+  cxxtools::RemoteProcedure<std::vector<int>, int, int> seq(*client, "seq");
+
   while (static_cast<unsigned>(cxxtools::atomicIncrement(_requestsStarted)) <= _numRequests)
   {
     try
     {
-      echo("hi");
-      cxxtools::atomicIncrement(_requestsFinished);
+      if (_vectorSize > 0)
+      {
+        std::vector<int> ret = seq(1, _vectorSize);
+        cxxtools::atomicIncrement(_requestsFinished);
+        if (ret.size() != _vectorSize)
+        {
+          std::cerr << "wrong response result size " << ret.size() << std::endl;
+          cxxtools::atomicIncrement(_requestsFailed);
+        }
+      }
+      else
+      {
+        std::string ret = echo("hi");
+        cxxtools::atomicIncrement(_requestsFinished);
+        if (ret != "hi")
+        {
+          std::cerr << "wrong response result \"" << ret << '"' << std::endl;
+          cxxtools::atomicIncrement(_requestsFailed);
+        }
+      }
     }
     catch (const std::exception& e)
     {
       {
         cxxtools::MutexLock lock(mutex);
-        std::cerr << "request failed with error " << e.what() << std::endl;
+        std::cerr << "request failed with error message \"" << e.what() << '"' << std::endl;
       }
 
       cxxtools::atomicIncrement(_requestsFailed);
@@ -116,22 +148,48 @@ int main(int argc, char* argv[])
     log_init("rpcbenchclient.properties");
 
     cxxtools::Arg<std::string> ip(argc, argv, 'i');
-    cxxtools::Arg<unsigned short> port(argc, argv, 'p', 7002);
     cxxtools::Arg<unsigned> threads(argc, argv, 't', 4);
+    cxxtools::Arg<bool> xmlrpc(argc, argv, 'x');
+    cxxtools::Arg<bool> binary(argc, argv, 'b');
+    cxxtools::Arg<bool> json(argc, argv, 'j');
+    cxxtools::Arg<bool> jsonhttp(argc, argv, 'J');
+    cxxtools::Arg<unsigned short> port(argc, argv, 'p', binary ? 7003 : json ? 7004 : 7002);
     BenchClient::numRequests(cxxtools::Arg<unsigned>(argc, argv, 'n', 10000));
+    BenchClient::vectorSize(cxxtools::Arg<unsigned>(argc, argv, 'v', 0));
 
-    std::cout << "call " << BenchClient::numRequests() << " requests with " << threads.getValue() << " threads\n\n"
-                 "options:\n"
-                 "   -l ip      set ip address of server (default: localhost)\n"
-                 "   -p number  set port number of server (default: 7002)\n"
-                 "   -t number  set number of threads (default: 4)\n"
-                 "   -n number  set number of requests (default: 10000)\n"
-              << std::endl;
+    if (!xmlrpc && !binary && !json && !jsonhttp)
+    {
+        std::cerr << "usage: " << argv[0] << " [options]\n"
+                     "options:\n"
+                     "   -l ip      set ip address of server (default: localhost)\n"
+                     "   -p number  set port number of server (default: 7002 for http, 7003 for binary and 7004 for json)\n"
+                     "   -x         use xmlrpc protocol\n"
+                     "   -b         use binary rpc protocol\n"
+                     "   -j         use json rpc protocol\n"
+                     "   -J         use json rpc over http protocol\n"
+                     "   -t number  set number of threads (default: 4)\n"
+                     "   -n number  set number of requests (default: 10000)\n"
+                     "one protocol must be selected\n"
+                  << std::endl;
+        return -1;
+    }
 
     BenchClients clients;
 
     while (clients.size() < threads)
-      clients.push_back(new BenchClient(port));
+    {
+      cxxtools::RemoteClient* client;
+      if (binary)
+        client = new cxxtools::bin::RpcClient(ip, port);
+      else if (json)
+        client = new cxxtools::json::RpcClient(ip, port);
+      else if (jsonhttp)
+        client = new cxxtools::json::HttpClient(ip, port, "/jsonrpc");
+      else if (xmlrpc)
+        client = new cxxtools::xmlrpc::HttpClient(ip, port, "/xmlrpc");
+
+      clients.push_back(new BenchClient(client));
+    }
 
     cxxtools::Clock cl;
     cl.start();

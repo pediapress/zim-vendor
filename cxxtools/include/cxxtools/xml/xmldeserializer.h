@@ -33,9 +33,11 @@
 #include "cxxtools/xml/xmlreader.h"
 #include <memory>
 
-namespace cxxtools {
+namespace cxxtools
+{
 
-namespace xml {
+namespace xml
+{
 
     class XmlReader;
     class Node;
@@ -45,38 +47,15 @@ namespace xml {
         Thic class performs XML deserialization of a single object or
         object data.
     */
-    class XmlDeserializer
+    class XmlDeserializer : public Deserializer
     {
         public:
             XmlDeserializer(cxxtools::xml::XmlReader& reader);
 
             XmlDeserializer(std::istream& is);
 
-            //! @brief Destructor
-            ~XmlDeserializer();
-
             cxxtools::xml::XmlReader& reader()
             { return *_reader; }
-
-            /** @brief Deserialize an object
-
-                This method will deserialize the object \a type from an
-                XML format. The type \a type must be serializable.
-            */
-            template <typename T>
-            void deserialize(T& type)
-            {
-                cxxtools::Deserializer<T> deser;
-                deser.begin(type);
-                this->get(&deser);
-                deser.fixup(_context);
-            }
-
-            void finish()
-            {
-                _context.fixup();
-                _context.clear();
-            }
 
             template <typename T>
             static void toObject(const std::string& str, T& type)
@@ -101,7 +80,7 @@ namespace xml {
             }
 
         protected:
-            void get(cxxtools::IDeserializer* deser);
+            void doDeserialize();
 
             //! @internal
             void beginDocument(const cxxtools::xml::Node& node);
@@ -135,11 +114,6 @@ namespace xml {
             ProcessNode _processNode;
 
             size_t _startDepth;
-
-            cxxtools::DeserializationContext _context;
-
-            //! @internal
-            cxxtools::IDeserializer* _deser;
 
             //! @internal
             cxxtools::String _nodeName;

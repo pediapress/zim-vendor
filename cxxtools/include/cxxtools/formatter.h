@@ -31,27 +31,53 @@
 #include <cxxtools/api.h>
 #include <cxxtools/string.h>
 #include <string>
+#include <cxxtools/config.h>
 
-namespace cxxtools {
+namespace cxxtools
+{
 
 class Formatter
 {
     public:
+#ifdef HAVE_LONG_LONG
+        typedef long long int_type;
+#else
+        typedef long int_type;
+#endif
+#ifdef HAVE_UNSIGNED_LONG_LONG
+        typedef unsigned long long unsigned_type;
+#else
+        typedef unsigned long unsigned_type;
+#endif
+
         virtual ~Formatter()
         { }
 
-        virtual void addValue(const std::string& name, const std::string& type,
-                              const cxxtools::String& value, const std::string& id) = 0;
+        virtual void addValueString(const std::string& name, const std::string& type,
+                              const cxxtools::String& value) = 0;
 
-        virtual void addReference(const std::string& name, const cxxtools::String& value) = 0;
+        virtual void addValueStdString(const std::string& name, const std::string& type,
+                              const std::string& value);
 
-        virtual void beginArray(const std::string& name, const std::string& type,
-                                const std::string& id) = 0;
+        virtual void addValueBool(const std::string& name, const std::string& type,
+                              bool value);
+
+        virtual void addValueInt(const std::string& name, const std::string& type,
+                              int_type value);
+
+        virtual void addValueUnsigned(const std::string& name, const std::string& type,
+                              unsigned_type value);
+
+        virtual void addValueFloat(const std::string& name, const std::string& type,
+                              long double value);
+
+        virtual void addNull(const std::string& name, const std::string& type);
+
+        virtual void beginArray(const std::string& name, const std::string& type) = 0;
 
         virtual void finishArray() = 0;
 
-        virtual void beginObject(const std::string& name, const std::string& type,
-                                 const std::string& id) = 0;
+        virtual void beginObject(const std::string& name, const std::string& type) = 0;
 
         virtual void beginMember(const std::string& name) = 0;
 

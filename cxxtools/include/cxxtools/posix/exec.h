@@ -1,20 +1,29 @@
 /*
  * Copyright (C) 2011 Tommi Maekitalo
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * is provided AS IS, WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, and
- * NON-INFRINGEMENT.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * As a special exception, you may use this file as part of a free
+ * software library without restriction. Specifically, if other files
+ * instantiate templates or use macros or inline functions from this
+ * file, or you compile this file and link it with other files to
+ * produce an executable, this file does not by itself cause the
+ * resulting executable to be covered by the GNU General Public
+ * License. This exception does not however invalidate any other
+ * reasons why the executable file might be covered by the GNU Library
+ * General Public License.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #include <cxxtools/noncopyable.h>
@@ -28,10 +37,6 @@ namespace cxxtools
   namespace posix
   {
     /** cxxtools::posix::Exec is a wrapper around the exec?? functions of posix.
-
-        Running one of the exec-variants of a posix system is difficult and
-        error prone to do it right. This class tries to make it as easy as
-        possible.
 
         Usage is like this:
         \code
@@ -64,7 +69,7 @@ namespace cxxtools
           args[1] = args[0] + cmd.size() + 1;
         }
 
-        void push_back(const std::string& arg)
+        BasicExec& push_back(const std::string& arg)
         {
           if (args[argc + 1] + arg.size() - data >= dataSize)
             throw std::out_of_range("argument list too long");
@@ -75,7 +80,13 @@ namespace cxxtools
           arg.copy(args[argc], arg.size());
           args[argc][arg.size()] = '\0';
           args[argc + 1] = args[argc] + arg.size() + 1;
+
+          return *this;
         }
+
+        // nice alias of push_back
+        BasicExec& arg(const std::string& arg)
+        { return push_back(arg); }
 
         void exec()
         {
@@ -83,8 +94,9 @@ namespace cxxtools
           ::execvp(args[0], args);
           throw SystemError("execvp");
         }
+
     };
 
-    typedef BasicExec<0xffff, 256> Exec;
+    typedef BasicExec<0x8000, 256> Exec;
   }
 }

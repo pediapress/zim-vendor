@@ -1,17 +1,5 @@
 /* src/config.h.in.  Generated from configure.in by autoheader.  */
 
-/* disable logging */
-#undef CXXTOOLS_LOG_DISABLE
-
-/* use log4cplus for logging */
-#undef CXXTOOLS_LOG_LOG4CPLUS
-
-/* use log4cxx for logging */
-#undef CXXTOOLS_LOG_LOG4CXX
-
-/* use cxxtools logging */
-#undef CXXTOOLS_LOG_LOGCXXTOOLS
-
 /* Define to 1 if you have the `accept4' function. */
 #undef HAVE_ACCEPT4
 
@@ -105,6 +93,9 @@
 
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST
+
+/* defined if int64_t is one of the base types */
+#undef INT64_IS_BASETYPE
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */

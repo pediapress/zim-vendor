@@ -29,8 +29,11 @@
 #include <iostream>
 #include <cxxtools/arg.h>
 #include <cxxtools/log.h>
-#include <cxxtools/xmlrpc/remoteprocedure.h>
+#include <cxxtools/remoteprocedure.h>
 #include <cxxtools/xmlrpc/httpclient.h>
+#include <cxxtools/bin/rpcclient.h>
+#include <cxxtools/json/rpcclient.h>
+#include <cxxtools/json/httpclient.h>
 
 ////////////////////////////////////////////////////////////////////////
 // main
@@ -42,13 +45,29 @@ int main(int argc, char* argv[])
     log_init();
 
     cxxtools::Arg<std::string> ip(argc, argv, 'i');
-    cxxtools::Arg<unsigned short> port(argc, argv, 'p', 7002);
+    cxxtools::Arg<bool> binary(argc, argv, 'b');
+    cxxtools::Arg<bool> json(argc, argv, 'j');
+    cxxtools::Arg<bool> jsonhttp(argc, argv, 'J');
+    cxxtools::Arg<unsigned short> port(argc, argv, 'p', binary ? 7003
+                                                      : json   ? 7004
+                                                      :          7002);
 
     // define a xlmrpc client
-    cxxtools::xmlrpc::HttpClient client(ip, port, "/myservice");
+    cxxtools::xmlrpc::HttpClient xmlrpcClient(ip, port, "/xmlrpc");
+    // and a binary rpc client
+    cxxtools::bin::RpcClient binaryClient(ip, port);
+    // and a json rpc client
+    cxxtools::json::RpcClient jsonClient(ip, port);
+    // and a json rpc http client
+    cxxtools::json::HttpClient jsonHttpClient(ip, port, "/jsonrpc");
 
-    // define remote procedure with std::string return value and a std::string parameter:
-    cxxtools::xmlrpc::RemoteProcedure<std::string, std::string> echo(client, "echo");
+    // define remote procedure with std::string return value and a std::string parameter,
+    // which uses one of the clients
+    cxxtools::RemoteProcedure<std::string, std::string> echo(
+        binary   ? static_cast<cxxtools::RemoteClient&>(binaryClient) :
+        json     ? static_cast<cxxtools::RemoteClient&>(jsonClient) :
+        jsonhttp ? static_cast<cxxtools::RemoteClient&>(jsonHttpClient) :
+                   static_cast<cxxtools::RemoteClient&>(xmlrpcClient), "echo");
 
     for (int a = 1; a < argc; ++a)
     {

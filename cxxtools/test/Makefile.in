@@ -41,10 +41,12 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/acx_pthread.m4 \
 	$(top_srcdir)/m4/asmtype.m4 \
-	$(top_srcdir)/m4/cxxtools_logging.m4 $(top_srcdir)/m4/iconv.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.in
+	$(top_srcdir)/m4/ax_check_compile_flag.m4 \
+	$(top_srcdir)/m4/ax_compiler_vendor.m4 \
+	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -53,30 +55,43 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
 am_alltests_OBJECTS = arg-test.$(OBJEXT) base64-test.$(OBJEXT) \
-	binserializer-test.$(OBJEXT) cache-test.$(OBJEXT) \
-	convert-test.$(OBJEXT) pool-test.$(OBJEXT) \
+	binrpc-test.$(OBJEXT) binserializer-test.$(OBJEXT) \
+	cache-test.$(OBJEXT) csvdeserializer-test.$(OBJEXT) \
+	csvserializer-test.$(OBJEXT) convert-test.$(OBJEXT) \
+	json-test.$(OBJEXT) jsondeserializer-test.$(OBJEXT) \
+	jsonrpc-test.$(OBJEXT) jsonrpchttp-test.$(OBJEXT) \
+	jsonserializer-test.$(OBJEXT) md5-test.$(OBJEXT) \
+	pool-test.$(OBJEXT) serializationinfo-test.$(OBJEXT) \
 	smartptr-test.$(OBJEXT) string-test.$(OBJEXT) \
 	test-main.$(OBJEXT) trim-test.$(OBJEXT) uri-test.$(OBJEXT) \
-	xmlreader-test.$(OBJEXT) xmlrpc-test.$(OBJEXT)
+	xmlreader-test.$(OBJEXT) xmlrpc-test.$(OBJEXT) \
+	xmlserializer-test.$(OBJEXT)
 alltests_OBJECTS = $(am_alltests_OBJECTS)
 alltests_DEPENDENCIES = $(top_builddir)/src/libcxxtools.la \
-	$(top_builddir)/src/unit/libcxxtools-unit.la \
+	$(top_builddir)/src/bin/libcxxtools-bin.la \
 	$(top_builddir)/src/http/libcxxtools-http.la \
+	$(top_builddir)/src/json/libcxxtools-json.la \
+	$(top_builddir)/src/unit/libcxxtools-unit.la \
 	$(top_builddir)/src/xml/libcxxtools-xml.la \
 	$(top_builddir)/src/xmlrpc/libcxxtools-xmlrpc.la
 am_rpcbenchclient_OBJECTS = rpcbenchclient.$(OBJEXT)
 rpcbenchclient_OBJECTS = $(am_rpcbenchclient_OBJECTS)
 rpcbenchclient_DEPENDENCIES = $(top_builddir)/src/libcxxtools.la \
 	$(top_builddir)/src/http/libcxxtools-http.la \
-	$(top_builddir)/src/xmlrpc/libcxxtools-xmlrpc.la
+	$(top_builddir)/src/xmlrpc/libcxxtools-xmlrpc.la \
+	$(top_builddir)/src/bin/libcxxtools-bin.la \
+	$(top_builddir)/src/json/libcxxtools-json.la
 am_rpcbenchserver_OBJECTS = rpcbenchserver.$(OBJEXT)
 rpcbenchserver_OBJECTS = $(am_rpcbenchserver_OBJECTS)
 rpcbenchserver_DEPENDENCIES = $(top_builddir)/src/libcxxtools.la \
 	$(top_builddir)/src/http/libcxxtools-http.la \
-	$(top_builddir)/src/xmlrpc/libcxxtools-xmlrpc.la
+	$(top_builddir)/src/xmlrpc/libcxxtools-xmlrpc.la \
+	$(top_builddir)/src/bin/libcxxtools-bin.la \
+	$(top_builddir)/src/json/libcxxtools-json.la
 am_serializer_bench_OBJECTS = serializer-bench.$(OBJEXT)
 serializer_bench_OBJECTS = $(am_serializer_bench_OBJECTS)
 serializer_bench_DEPENDENCIES = $(top_builddir)/src/libcxxtools.la \
+	$(top_builddir)/src/bin/libcxxtools-bin.la \
 	$(top_builddir)/src/xml/libcxxtools-xml.la
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/src
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -116,7 +131,6 @@ CXXFLAGS = @CXXFLAGS@
 CXXTOOLS_ATOMICITY = @CXXTOOLS_ATOMICITY@
 CXXTOOLS_CXXFLAGS = @CXXTOOLS_CXXFLAGS@
 CXXTOOLS_LDFLAGS = @CXXTOOLS_LDFLAGS@
-CXXTOOLS_LOGGING = @CXXTOOLS_LOGGING@
 CXXTOOLS_STD_LOCALE = @CXXTOOLS_STD_LOCALE@
 CXXTOOLS_SUSECONDS = @CXXTOOLS_SUSECONDS@
 CYGPATH_W = @CYGPATH_W@
@@ -151,7 +165,6 @@ LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBICONV = @LTLIBICONV@
 LTLIBOBJS = @LTLIBOBJS@
-MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -180,7 +193,6 @@ SET_MAKE = @SET_MAKE@
 SHARED_LIB_FLAG = @SHARED_LIB_FLAG@
 SHELL = @SHELL@
 STRIP = @STRIP@
-TESTDIR = @TESTDIR@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -241,45 +253,63 @@ AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_builddir)/include -I$(top_srcdir)/incl
 alltests_SOURCES = \
     arg-test.cpp \
     base64-test.cpp \
+    binrpc-test.cpp \
     binserializer-test.cpp \
     cache-test.cpp \
+    csvdeserializer-test.cpp \
+    csvserializer-test.cpp \
     convert-test.cpp \
+    json-test.cpp \
+    jsondeserializer-test.cpp \
+    jsonrpc-test.cpp \
+    jsonrpchttp-test.cpp \
+    jsonserializer-test.cpp \
+    md5-test.cpp \
     pool-test.cpp \
+    serializationinfo-test.cpp \
     smartptr-test.cpp \
     string-test.cpp \
     test-main.cpp \
     trim-test.cpp \
     uri-test.cpp \
     xmlreader-test.cpp \
-    xmlrpc-test.cpp
+    xmlrpc-test.cpp \
+    xmlserializer-test.cpp
 
 alltests_LDADD = $(top_builddir)/src/libcxxtools.la \
-        $(top_builddir)/src/unit/libcxxtools-unit.la \
+        $(top_builddir)/src/bin/libcxxtools-bin.la \
         $(top_builddir)/src/http/libcxxtools-http.la \
+        $(top_builddir)/src/json/libcxxtools-json.la \
+        $(top_builddir)/src/unit/libcxxtools-unit.la \
         $(top_builddir)/src/xml/libcxxtools-xml.la \
         $(top_builddir)/src/xmlrpc/libcxxtools-xmlrpc.la
 
 serializer_bench_SOURCES = serializer-bench.cpp
 serializer_bench_LDADD = $(top_builddir)/src/libcxxtools.la \
+        $(top_builddir)/src/bin/libcxxtools-bin.la \
         $(top_builddir)/src/xml/libcxxtools-xml.la
 
 rpcbenchclient_SOURCES = rpcbenchclient.cpp
 rpcbenchclient_LDADD = $(top_builddir)/src/libcxxtools.la \
         $(top_builddir)/src/http/libcxxtools-http.la \
-        $(top_builddir)/src/xmlrpc/libcxxtools-xmlrpc.la
+        $(top_builddir)/src/xmlrpc/libcxxtools-xmlrpc.la \
+        $(top_builddir)/src/bin/libcxxtools-bin.la \
+        $(top_builddir)/src/json/libcxxtools-json.la
 
 rpcbenchserver_SOURCES = rpcbenchserver.cpp
 rpcbenchserver_LDADD = $(top_builddir)/src/libcxxtools.la \
         $(top_builddir)/src/http/libcxxtools-http.la \
-        $(top_builddir)/src/xmlrpc/libcxxtools-xmlrpc.la
+        $(top_builddir)/src/xmlrpc/libcxxtools-xmlrpc.la \
+        $(top_builddir)/src/bin/libcxxtools-bin.la \
+        $(top_builddir)/src/json/libcxxtools-json.la
 
-AM_CXXFLAGS = $(PTHREAD_CFLAGS) -DTESTDIR='"@TESTDIR@"'
+AM_CXXFLAGS = $(PTHREAD_CFLAGS)
 AM_LDFLAGS = $(PTHREAD_LIBS)
 all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .cpp .lo .o .obj
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -304,9 +334,9 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 
-$(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
+$(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
+$(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 
@@ -339,12 +369,22 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/arg-test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/base64-test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/binrpc-test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/binserializer-test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cache-test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/convert-test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csvdeserializer-test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csvserializer-test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/json-test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jsondeserializer-test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jsonrpc-test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jsonrpchttp-test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jsonserializer-test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/md5-test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pool-test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rpcbenchclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rpcbenchserver.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/serializationinfo-test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/serializer-bench.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/smartptr-test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/string-test.Po@am__quote@
@@ -353,6 +393,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/uri-test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xmlreader-test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xmlrpc-test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xmlserializer-test.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

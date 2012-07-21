@@ -28,58 +28,16 @@
  */
 #include "cxxtools/xmlrpc/service.h"
 #include "cxxtools/xmlrpc/responder.h"
-#include "cxxtools/xml/startelement.h"
-#include "cxxtools/xml/characters.h"
-#include "cxxtools/xml/endelement.h"
 #include "cxxtools/http/request.h"
-#include "cxxtools/utf8codec.h"
 
-namespace cxxtools {
+namespace cxxtools
+{
 
-namespace xmlrpc {
-
+namespace xmlrpc
+{
 
 Service::~Service()
 {
-    ProcedureMap::iterator it;
-    for(it = _procedures.begin(); it != _procedures.end(); ++it)
-    {
-        delete it->second;
-    }
-}
-
-
-ServiceProcedure* Service::getProcedure(const std::string& name)
-{
-    ProcedureMap::iterator it = _procedures.find( name );
-    if( it == _procedures.end() )
-    {
-        return 0;
-    }
-
-    return it->second->clone();
-}
-
-
-void Service::releaseProcedure(ServiceProcedure* proc)
-{
-    delete proc;
-}
-
-
-void Service::registerProcedure(const std::string& name, ServiceProcedure* proc)
-{
-    ProcedureMap::iterator it = _procedures.find(name);
-    if (it == _procedures.end())
-    {
-        std::pair<const std::string, ServiceProcedure*> p( name, proc );
-        _procedures.insert( p );
-    }
-    else
-    {
-        delete it->second;
-        it->second = proc;
-    }
 }
 
 

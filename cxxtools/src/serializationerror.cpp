@@ -27,15 +27,22 @@
  */
 #include <cxxtools/serializationerror.h>
 
-namespace cxxtools {
+namespace cxxtools
+{
 
-SerializationError::SerializationError(const std::string& msg, const SourceInfo& si)
-: std::runtime_error(msg + si)
-{ }
-
-
-SerializationError::SerializationError(const char* msg)
+SerializationError::SerializationError(const std::string& msg)
 : std::runtime_error(msg)
 { }
+
+void SerializationError::doThrow(const std::string& msg)
+{
+    throw SerializationError(msg);
+}
+
+SerializationMemberNotFound::SerializationMemberNotFound(const std::string& member)
+    : SerializationError("Missing info for '" + member + "'"),
+      _member(member)
+{
+}
 
 } // namespace cxxtools

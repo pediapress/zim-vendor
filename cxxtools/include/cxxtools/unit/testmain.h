@@ -34,7 +34,6 @@
 #include <cxxtools/loginit.h>
 #include <fstream>
 
-// TODO: move to application class later
 namespace TestMain
 {
     static int argc = 0;
@@ -44,24 +43,25 @@ namespace TestMain
 
 int main(int argc, char** argv)
 {
+    log_init();
+
     TestMain::argc = argc;
     TestMain::argv = argv;
     cxxtools::unit::Application app;
 
     cxxtools::Arg<bool> help(argc, argv, 'h');
-    if( help )
+    cxxtools::Arg<bool> list(argc, argv, 'l');
+    if( help || list )
     {
-        std::cerr << "Usage: " << argv[0] << " [-t <testname>] [-f <logfile>]\n";
+        std::cerr << "Usage: " << argv[0] << " [-t <testname>] [-f <logfile>] { testname }\n";
         std::cerr << "Available Tests:\n";
         std::list<cxxtools::unit::Test*>::const_iterator it;
         for( it = app.tests().begin(); it != app.tests().end(); ++it)
         {
-            std::cerr << "  - "<< (*it)->name() << std::endl;
+            std::cerr << "  - " << (*it)->name() << std::endl;
         }
         return 0;
     }
-
-    log_init();
 
     cxxtools::unit::BriefReporter consoleReporter;
     app.attachReporter(consoleReporter);
@@ -78,18 +78,22 @@ int main(int argc, char** argv)
         app.attachReporter(fileReporter);
     }
 
-    try {
-        cxxtools::Arg<std::string> test(argc, argv, 't');
-        std::string testName = test.getValue();
-        if( testName.empty() )
+    try
+    {
+        if (argc <= 1)
         {
             app.run();
-            return app.errors();
         }
         else
         {
-            app.run(testName);
-            return app.errors();
+            for (int a = 1; a < argc; ++a)
+            {
+                std::string testName = argv[a];
+                if (testName == "-t")
+                    continue;   // just for compatibility
+
+                app.run(testName);
+            }
         }
 
         return app.errors();

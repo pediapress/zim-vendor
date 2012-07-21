@@ -115,6 +115,7 @@ namespace cxxtools
         else if (isKeyChar(ch))
         {
           key = ch;
+          keypart = ch;
           state = state_key;
         }
         else if (!isSpace(ch) && ch != '\n' && ch != '\r')
@@ -153,7 +154,6 @@ namespace cxxtools
         if (ch == '=')
         {
           state = state_value;
-          value.clear();
         }
         else if (!isSpace(ch))
           throw std::runtime_error("parse error while reading key " + key);
@@ -163,9 +163,10 @@ namespace cxxtools
         if (ch == '\n')
         {
           ret = event.onValue(value);
+          value.clear();
           state = state_0;
         }
-        if (ch == '\\')
+        else if (ch == '\\')
           state = state_value_esc;
         else if (!value.empty() || !isSpace(ch))
           value += ch;
@@ -191,6 +192,7 @@ namespace cxxtools
       case state_value:
       case state_value_esc:
         event.onValue(value);
+        value.clear();
         break;
 
       case state_0:

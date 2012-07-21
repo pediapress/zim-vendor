@@ -29,19 +29,40 @@
 
 #include "cxxtools/xmlrpc/client.h"
 #include "clientimpl.h"
-#include "cxxtools/xmlrpc/remoteprocedure.h"
+#include "cxxtools/remoteprocedure.h"
 #include "cxxtools/xml/xmlerror.h"
 #include "cxxtools/xml/startelement.h"
 #include "cxxtools/xml/characters.h"
 #include "cxxtools/xml/endelement.h"
 #include "cxxtools/selectable.h"
 #include "cxxtools/utf8codec.h"
+#include "cxxtools/xmlrpc/errorcodes.h"
+#include "cxxtools/serializationerror.h"
 #include "cxxtools/log.h"
 
 
 log_define("cxxtools.xmlrpc.client.impl")
 
 namespace cxxtools {
+
+
+inline void operator >>=(const cxxtools::SerializationInfo& si, RemoteException& fault)
+{
+    int faultCode;
+    std::string faultString;
+    si.getMember("faultCode") >>= faultCode;
+    si.getMember("faultString") >>= faultString;
+    fault.rc(faultCode);
+    fault.text(faultString);
+}
+
+
+inline void operator <<=(cxxtools::SerializationInfo& si, const RemoteException& fault)
+{
+    si.addMember("faultCode") <<= fault.rc();
+    si.addMember("faultString") <<= fault.text();
+}
+
 
 namespace xmlrpc {
 
@@ -73,7 +94,7 @@ ClientImpl::~ClientImpl()
 }
 
 
-void ClientImpl::beginCall(IDeserializer& r, IRemoteProcedure& method, ISerializer** argv, unsigned argc)
+void ClientImpl::beginCall(IComposer& r, IRemoteProcedure& method, IDecomposer** argv, unsigned argc)
 {
     _method = &method;
     _state = OnBegin;
@@ -83,7 +104,7 @@ void ClientImpl::beginCall(IDeserializer& r, IRemoteProcedure& method, ISerializ
     beginExecute();
 
     _reader.reset(_ts);
-    _scanner.begin(r, _context);
+    _scanner.begin(_deserializer, r);
 }
 
 
@@ -93,7 +114,7 @@ void ClientImpl::endCall()
 }
 
 
-void ClientImpl::call(IDeserializer& r, IRemoteProcedure& method, ISerializer** argv, unsigned argc)
+void ClientImpl::call(IComposer& r, IRemoteProcedure& method, IDecomposer** argv, unsigned argc)
 {
     _method = &method;
     _state = OnBegin;
@@ -103,7 +124,8 @@ void ClientImpl::call(IDeserializer& r, IRemoteProcedure& method, ISerializer** 
     std::istringstream is(execute());
     _ts.attach(is);
     _reader.reset(_ts);
-    _scanner.begin(r, _context);
+    _deserializer.begin();
+    _scanner.begin(_deserializer, r);
 
     while( _reader.get().type() !=  cxxtools::xml::Node::EndDocument )
     {
@@ -168,17 +190,17 @@ std::size_t ClientImpl::onReadReply()
     }
     catch(const xml::XmlError& error)
     {
-        _method->setFault(Fault::invalidXmlRpc, error.what());
+        _method->setFault(ErrorCodes::invalidXmlRpc, error.what());
         _method->onFinished();
     }
     catch(const SerializationError& error)
     {
-        _method->setFault(Fault::invalidMethodParameters, error.what());
+        _method->setFault(ErrorCodes::invalidMethodParameters, error.what());
         _method->onFinished();
     }
     catch(const ConversionError& error)
     {
-        _method->setFault(Fault::invalidMethodParameters, error.what());
+        _method->setFault(ErrorCodes::invalidMethodParameters, error.what());
         _method->onFinished();
     }
     catch(const std::exception& error)
@@ -220,7 +242,7 @@ void ClientImpl::onReplyFinished()
 }
 
 
-void ClientImpl::prepareRequest(const String& name, ISerializer** argv, unsigned argc)
+void ClientImpl::prepareRequest(const String& name, IDecomposer** argv, unsigned argc)
 {
     _writer.begin( prepareRequest() );
     _writer.writeStartElement( methodCall );
@@ -250,7 +272,7 @@ void ClientImpl::advance(const cxxtools::xml::Node& node)
             {
                 const xml::StartElement& se = static_cast<const xml::StartElement&>(node);
                 if( se.name() != L"methodResponse" )
-                    throw SerializationError("invalid XML-RPC methodCall");
+                    SerializationError::doThrow("invalid XML-RPC methodCall");
 
                 _state = OnMethodResponseBegin;
             }
@@ -272,12 +294,12 @@ void ClientImpl::advance(const cxxtools::xml::Node& node)
                 else if( se.name() == L"fault")
                 {
                     _fh.begin(_fault);
-                    _scanner.begin(_fh, _context);
+                    _scanner.begin(_deserializer, _fh);
                     _state = OnFaultBegin;
                     break;
                 }
 
-                throw SerializationError("invalid XML-RPC methodCall");
+                SerializationError::doThrow("invalid XML-RPC methodCall");
             }
             break;
         }
@@ -300,7 +322,7 @@ void ClientImpl::advance(const cxxtools::xml::Node& node)
             {
                 const xml::EndElement& ee = static_cast<const xml::EndElement&>(node);
                 if( ee.name() != L"methodResponse" )
-                    throw SerializationError("invalid XML-RPC methodCall");
+                    SerializationError::doThrow("invalid XML-RPC methodCall");
 
                 _method->setFault(_fault.rc(), _fault.text());
 
@@ -321,7 +343,7 @@ void ClientImpl::advance(const cxxtools::xml::Node& node)
             {
                 const xml::StartElement& se = static_cast<const xml::StartElement&>(node);
                 if( se.name() != L"param" )
-                    throw SerializationError("invalid XML-RPC methodCall");
+                    SerializationError::doThrow("invalid XML-RPC methodCall");
 
                 _state = OnParam;
             }
@@ -347,7 +369,7 @@ void ClientImpl::advance(const cxxtools::xml::Node& node)
             {
                 const xml::EndElement& ee = static_cast<const xml::EndElement&>(node);
                 if( ee.name() != L"params" )
-                    throw SerializationError("invalid XML-RPC methodCall");
+                    SerializationError::doThrow("invalid XML-RPC methodCall");
 
                 _state = OnParamsEnd;
             }
@@ -360,7 +382,7 @@ void ClientImpl::advance(const cxxtools::xml::Node& node)
             {
                 const xml::EndElement& ee = static_cast<const xml::EndElement&>(node);
                 if( ee.name() != L"methodResponse" )
-                    throw SerializationError("invalid XML-RPC methodCall");
+                    SerializationError::doThrow("invalid XML-RPC methodCall");
 
                 _state = OnMethodResponseEnd;
             }

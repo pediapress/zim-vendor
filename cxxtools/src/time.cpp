@@ -36,26 +36,29 @@
 namespace cxxtools
 {
 
-InvalidTime::InvalidTime(const SourceInfo& si)
-: std::invalid_argument("Invalid time" + si)
+InvalidTime::InvalidTime()
+: std::invalid_argument("Invalid time")
 { }
 
 
-inline unsigned short getNumber2(const char* s)
+namespace
 {
-    if ( ! std::isdigit(s[0]) || ! std::isdigit(s[1]) )
-        throw ConversionError( CXXTOOLS_ERROR_MSG("Invalid Time format") );
+    unsigned short getNumber2(const char* s)
+    {
+        if ( ! std::isdigit(s[0]) || ! std::isdigit(s[1]) )
+            throw ConversionError("Invalid Time format");
 
-    return (s[0] - '0') * 10 + (s[1] - '0');
-}
+        return (s[0] - '0') * 10 + (s[1] - '0');
+    }
 
 
-inline unsigned short getNumber3(const char* s)
-{
-    if( ! std::isdigit(s[0]) || ! std::isdigit(s[1]) || ! std::isdigit(s[2]) )
-       throw ConversionError( CXXTOOLS_ERROR_MSG("Invalid Time format") );
+    unsigned short getNumber3(const char* s)
+    {
+        if( ! std::isdigit(s[0]) || ! std::isdigit(s[1]) || ! std::isdigit(s[2]) )
+           throw ConversionError("Invalid Time format");
 
-    return ( s[0] - '0') * 100 + (s[1] - '0') * 10 + (s[2] - '0' );
+        return ( s[0] - '0') * 100 + (s[1] - '0') * 10 + (s[2] - '0' );
+    }
 }
 
 
@@ -64,15 +67,15 @@ void convert(Time& time, const std::string& s)
     unsigned hour = 0, min = 0, sec = 0, msec = 0;
 
     if( s.size() < 11 || s.at(2) != ':' || s.at(5) != ':' || s.at(8) != '.')
-        throw ConversionError( CXXTOOLS_ERROR_MSG("Invalid Time format") );
+        throw ConversionError("Invalid Time format");
 
-	const char* d = s.data();
-	hour = getNumber2(d);
-	min = getNumber2(d + 3);
-	sec = getNumber2(d + 6);
-	msec = getNumber3(d + 9);
+    const char* d = s.data();
+    hour = getNumber2(d);
+    min = getNumber2(d + 3);
+    sec = getNumber2(d + 6);
+    msec = getNumber3(d + 9);
 
-	time.set(hour, min, sec, msec);
+    time.set(hour, min, sec, msec);
 }
 
 
@@ -133,8 +136,9 @@ void operator >>=(const SerializationInfo& si, Time& time)
     }
     else
     {
-        std::string s = si.toValue<std::string>();
-        convert(time, s);;
+        std::string s;
+        si.getValue(s);
+        convert(time, s);
     }
 }
 

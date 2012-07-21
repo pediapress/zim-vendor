@@ -31,6 +31,7 @@
 #define CXXTOOLS_CONVERT_H
 
 #include <cxxtools/api.h>
+#include <cxxtools/config.h>
 #include <cxxtools/string.h>
 #include <cxxtools/stringstream.h>
 #include <cxxtools/conversionerror.h>
@@ -42,6 +43,8 @@
 #include <iterator>
 #include <cctype>
 #include <cmath>
+
+#include <cxxtools/config.h>
 
 namespace cxxtools
 {
@@ -98,6 +101,12 @@ CXXTOOLS_API void convert(int& n, const String& str);
 CXXTOOLS_API void convert(unsigned int& n, const String& str);
 CXXTOOLS_API void convert(long& n, const String& str);
 CXXTOOLS_API void convert(unsigned long& n, const String& str);
+#ifdef HAVE_LONG_LONG
+CXXTOOLS_API void convert(long long& n, const String& str);
+#endif
+#ifdef HAVE_UNSIGNED_LONG_LONG
+CXXTOOLS_API void convert(unsigned long long& n, const String& str);
+#endif
 
 CXXTOOLS_API void convert(float& n, const String& str);
 CXXTOOLS_API void convert(double& n, const String& str);
@@ -110,14 +119,8 @@ inline void convert(T& t, const String& str)
     Char ch;
     is >> t;
     if (is.fail() || !(is >> ch).eof())
-        ConversionError::doThrow(typeid(T).name(), "cxxtools::String");
+        ConversionError::doThrow(typeid(T).name(), "String");
 }
-
-//
-// Conversions from const cxxtools::Char* (null-terminated)
-//
-
-CXXTOOLS_API void convert(int& n, const Char* str);
 
 //
 // Conversions to std::string
@@ -171,6 +174,12 @@ CXXTOOLS_API void convert(int& n, const std::string& str);
 CXXTOOLS_API void convert(unsigned int& n, const std::string& str);
 CXXTOOLS_API void convert(long& n, const std::string& str);
 CXXTOOLS_API void convert(unsigned long& n, const std::string& str);
+#ifdef HAVE_LONG_LONG
+CXXTOOLS_API void convert(long long& n, const std::string& str);
+#endif
+#ifdef HAVE_UNSIGNED_LONG_LONG
+CXXTOOLS_API void convert(unsigned long long& n, const std::string& str);
+#endif
 
 CXXTOOLS_API void convert(float& n, const std::string& str);
 CXXTOOLS_API void convert(double& n, const std::string& str);
@@ -183,14 +192,36 @@ inline void convert(T& t, const std::string& str)
     char ch;
     is >> t;
     if (is.fail() || !(is >> ch).eof())
-        ConversionError::doThrow(typeid(T).name(), "std::string");
+        ConversionError::doThrow(typeid(T).name(), "string");
 }
 
 //
 // Conversions from const char* (null-terminated)
 //
 
+CXXTOOLS_API void convert(bool& n, const char* str);
+
+CXXTOOLS_API void convert(char& n, const char* str);
+CXXTOOLS_API void convert(signed char& n, const char* str);
+CXXTOOLS_API void convert(unsigned char& n, const char* str);
+
+CXXTOOLS_API void convert(short& n, const char* str);
+CXXTOOLS_API void convert(unsigned short& n, const char* str);
 CXXTOOLS_API void convert(int& n, const char* str);
+CXXTOOLS_API void convert(unsigned int& n, const char* str);
+CXXTOOLS_API void convert(long& n, const char* str);
+CXXTOOLS_API void convert(unsigned long& n, const char* str);
+#ifdef HAVE_LONG_LONG
+CXXTOOLS_API void convert(long long& n, const char* str);
+#endif
+#ifdef HAVE_UNSIGNED_LONG_LONG
+CXXTOOLS_API void convert(unsigned long long& n, const char* str);
+#endif
+
+CXXTOOLS_API void convert(float& n, const char* str);
+CXXTOOLS_API void convert(double& n, const char* str);
+CXXTOOLS_API void convert(long double& n, const char* str);
+
 
 //
 // Generic stream-based conversions
@@ -242,7 +273,7 @@ inline OutIterT putInt(OutIterT it, T i);
 /** @brief Formats a floating point value in a given format.
  */
 template <typename OutIterT, typename T, typename FormatT>
-OutIterT putFloat(OutIterT it, T d, const FormatT& fmt, int precision, bool scientific);
+OutIterT putFloat(OutIterT it, T d, const FormatT& fmt, int precision);
 
 /** @brief Formats a floating point value in default format.
  */
@@ -499,6 +530,7 @@ inline unsigned long formatAbs(unsigned long i, bool& isNeg)
     return i;
 }
 
+#ifdef HAVE_LONG_LONG
 //! @internal @brief Returns the absolute value of \a i
 inline unsigned long long formatAbs(long long i, bool& isNeg)
 {
@@ -506,13 +538,16 @@ inline unsigned long long formatAbs(long long i, bool& isNeg)
     unsigned long long u = isNeg ? -i : static_cast<unsigned long long>(i);
     return u;
 }
+#endif
 
+#ifdef HAVE_UNSIGNEDLONG_LONG
 //! @internal @brief Returns the absolute value of \a i
 inline unsigned long long formatAbs(unsigned long long i, bool& isNeg)
 {
     isNeg = false;
     return i;
 }
+#endif
 
 /** @brief Formats an integer in a given format.
  */
@@ -598,68 +633,10 @@ inline OutIterT putInt(OutIterT it, T i)
 }
 
 
-template <typename CharT, typename T, typename FormatT>
-inline std::size_t formatFloat(CharT* fraction, std::size_t fractSize, int& intpart, int& exp, T n,
-                               const FormatT& fmt, int precision, bool scientific)
-{
-    intpart = 0;
-    exp = 0;
-    
-    if(n == T(0.0) || n != n)
-        return 0;
-
-    const bool neg = n < 0;
-    if(n < 0)
-        n = -n;
-    
-    if( n == std::numeric_limits<T>::infinity() )
-        return 0;
-    
-    exp = static_cast<int>( std::log10(n) );
-    
-    if(exp != 0)
-        n /= std::pow(T(10.0), exp);
-
-    if( precision >= 0 && std::size_t(precision) < fractSize )
-    {
-        if( ! scientific )
-            precision += exp;
-            
-        T roundfact = std::pow(T(10.0), precision);
-        n = (std::floor((n * roundfact) + T(0.5)) + T(0.1)) / roundfact;
-    }
-
-    intpart = static_cast<int>( std::floor(n) );
-    n -= intpart;
-    if(neg)
-        intpart = -intpart;
-    
-    int digit = 0;
-    T eps = std::numeric_limits<T>::epsilon();
-    std::size_t places = 0;
-
-    while(n > eps && places < fractSize)
-    {
-        eps *= 10.0;
-        n *= 10.0;
-        digit = static_cast<int>( std::floor(n) );
-        n -= digit;
-
-        CharT c = fmt.toChar(digit);
-        *fraction++ = c;
-
-        ++places;
-    }
-
-    return places;
-}
-
-
 template <typename OutIterT, typename T, typename FormatT>
-inline OutIterT putFloat(OutIterT it, T d, const FormatT& fmt, int precision, bool scientific)
+inline OutIterT putFloat(OutIterT it, T d, const FormatT& fmt, int precision)
 {
     typedef typename FormatT::CharT CharT;
-    CharT zero = fmt.toChar(0);
 
     // 1. Test for not-a-number with d != d
     if( d != d ) 
@@ -693,41 +670,70 @@ inline OutIterT putFloat(OutIterT it, T d, const FormatT& fmt, int precision, bo
 
         return it;
     }
-    
-    const int bufsize = std::numeric_limits<T>::digits10;
-    CharT fract[bufsize];
-    int i = 0;
-    int e = 0;
-    int fractSize = formatFloat(fract, bufsize, i, e, num, fmt, precision, scientific);
 
-    // show only significant digits for default format
-    precision = 1;
-    if( e < fractSize )
-        precision = fractSize - e;
+    const int bufsize = std::numeric_limits<T>::digits10 + 1;
 
-    int n = 0;
-    if(e >= 0)
+    if (precision > bufsize)
+        precision = bufsize;
+
+    CharT fract[bufsize + 1];
+    fract[bufsize]='\0';
+
+    int exp = static_cast<int>(std::floor(std::log10(num))) + 1;
+
+    num *= std::pow(T(10.0), static_cast<int>(precision) - exp);
+    num += .5;
+
+    bool notZero = false;
+    for (unsigned short d = precision; d > 0; --d)
     {
-        *it++ = fmt.toChar(i);
-        for(; n < e; ++n)
-            *it++ = (n < fractSize) ? fract[n] : zero;
+        T n = num / 10.0;
+        T fl = std::floor(n) * 10.0;
+        unsigned char v = static_cast<unsigned char>(num - fl);
+        notZero |= (v != 0);
+        fract[d - 1] = notZero ? fmt.toChar(v) : CharT('\0');
+        num = n;
+    }
 
-        *it++ = fmt.point();
+    if (fract[0] == CharT('\0'))
+    {
+        *it = '0'; ++it;
+        return it;
+    }
+
+    if (exp <= 0)
+    {
+        *it = '0'; ++it;
+        *it = '.'; ++it;
+
+        while (exp < 0)
+        {
+            *it = '0'; ++it;
+            ++exp;
+        }
+
+        for (int d = 0; fract[d]; ++d)
+        {
+            *it = fract[d]; ++it;
+        }
     }
     else
     {
-        *it++ = zero;
-        *it++ = fmt.point();
+        for (int d = 0; fract[d]; ++d)
+        {
+            if (exp-- == 0)
+            {
+                *it = '.';
+                ++it;
+            }
+            *it = fract[d]; ++it;
+        }
 
-        for( ;n > ++e && precision > 0; --precision)
-            *it++ = zero;
-
-        if(precision-- > 0)
-            *it++ = fmt.toChar(i);
+        while (exp-- > 0)
+        {
+            *it = '0'; ++it;
+        }
     }
-
-    for(; precision > 0; ++n, --precision)
-        *it++ = (n < fractSize) ?  fract[n] : zero; 
 
     return it;
 }
@@ -736,9 +742,9 @@ inline OutIterT putFloat(OutIterT it, T d, const FormatT& fmt, int precision, bo
 template <typename OutIterT, typename T>
 inline OutIterT putFloat(OutIterT it, T d)
 {
-    const int precision = std::numeric_limits<T>::digits10;
+    const int precision = std::numeric_limits<T>::digits10 + 1;
     FloatFormat<char> fmt;
-    return putFloat(it, d, fmt, precision, false);
+    return putFloat(it, d, fmt, precision);
 }
 
 
@@ -777,6 +783,9 @@ InIterT getInt(InIterT it, InIterT end, bool& ok, T& n, const FormatT& fmt)
 
     bool pos = false;
     it = getSign(it, end, pos, fmt);
+
+    if (it == end)
+        return it;
 
     bool isNeg = ! pos;
     if( isNeg )
@@ -841,6 +850,9 @@ InIterT getFloat(InIterT it, InIterT end, bool& ok, T& n, const FormatT& fmt)
     bool pos = false;
     it = getSign(it, end, pos, fmt);
     
+    if (it == end)
+        return it;
+
     // NaN, -inf, +inf
     bool done = false;
     while(it != end)
@@ -861,7 +873,26 @@ InIterT getFloat(InIterT it, InIterT end, bool& ok, T& n, const FormatT& fmt)
                 if(*it != 'n' && *it != 'N')
                     return it;
 
-                n = std::numeric_limits<T>::quiet_NaN();
+                // NaNQ, NaNS (seen on AIX/xlC)
+                {
+                    InIterT nit = it;
+                    ++nit;
+                    if (*nit == 'q' || *nit == 'Q')
+                    {
+                        n = std::numeric_limits<T>::quiet_NaN();
+                        ++it;
+                    }
+                    else if (*nit == 's' || *nit == 'S')
+                    {
+                        n = std::numeric_limits<T>::signaling_NaN();
+                        ++it;
+                    }
+                    else
+                    {
+                        n = std::numeric_limits<T>::quiet_NaN();
+                    }
+                }
+
                 ok = true;
                 return ++it;
                 break;
@@ -932,11 +963,16 @@ InIterT getFloat(InIterT it, InIterT end, bool& ok, T& n, const FormatT& fmt)
     }
 
     // integral part
+    bool withFractional = false;
     for( ; it != end; ++it)
     {
-        if( *it == fmt.point() )
+        if( *it == fmt.point() || *it == fmt.e() || *it == fmt.E() )
         {
-            ++it;
+            if( *it == fmt.point())
+            {
+                withFractional = true;
+                ++it;
+            }
             break;
         }
         
@@ -958,41 +994,45 @@ InIterT getFloat(InIterT it, InIterT end, bool& ok, T& n, const FormatT& fmt)
         return it;
     }
 
-    // fractional part, ignore 0 digits after dot
-    unsigned short fractDigits = 0;
-    size_t maxDigits = std::numeric_limits<unsigned short>::max() - std::numeric_limits<T>::digits10;
-    while(it != end && *it == zero)
-    {
-        if( fractDigits > maxDigits )
-            return it;
-
-        ++fractDigits;
-        ++it;
-    }
- 
-    // fractional part, parse like integer, skip insignificant digits
-    unsigned short significants = 0;
-    T fraction = 0.0;
-    for( ; it != end; ++it)
-    {
-        unsigned digit = fmt.toDigit(*it); 
-        if(digit >= fmt.base)
-            break;
-
-        if( significants <= std::numeric_limits<T>::digits10 )
-        {
-            fraction *= 10;
-            fraction += digit;
-
-            ++fractDigits;
-            ++significants;
-        }
-    }
-
-    // fractional part, scale down
     T base = 10.0;
-    fraction /= std::pow(base, T(fractDigits));
-    n += fraction;
+    if( withFractional)
+    {
+        // fractional part, ignore 0 digits after dot
+        unsigned short fractDigits = 0;
+        size_t maxDigits = std::numeric_limits<unsigned short>::max() - std::numeric_limits<T>::digits10;
+        while(it != end && *it == zero)
+        {
+            if( fractDigits > maxDigits )
+                return it;
+            
+            ++fractDigits;
+            ++it;
+        }
+ 
+        // fractional part, parse like integer, skip insignificant digits
+        unsigned short significants = 0;
+        T fraction = 0.0;
+        for( ; it != end; ++it)
+        {
+            unsigned digit = fmt.toDigit(*it); 
+            if(digit >= fmt.base)
+                break;
+            
+            if( significants <= std::numeric_limits<T>::digits10 )
+            {
+                fraction *= 10;
+                fraction += digit;
+                
+                ++fractDigits;
+                ++significants;
+            }
+        }
+    
+
+        // fractional part, scale down
+        fraction /= std::pow(base, T(fractDigits));
+        n += fraction;
+    }
 
     // exponent [e|E][+|-][0-9]*
     if(it != end && (*it == fmt.e() || *it == fmt.E()) )

@@ -30,21 +30,26 @@
 #define cxxtools_xmlrpc_Responder_h
 
 #include <cxxtools/xmlrpc/api.h>
-#include <cxxtools/xmlrpc/fault.h>
+#include <cxxtools/remoteexception.h>
 #include <cxxtools/xmlrpc/scanner.h>
 #include <cxxtools/xmlrpc/formatter.h>
 #include <cxxtools/xml/xmlreader.h>
 #include <cxxtools/xml/xmlwriter.h>
 #include <cxxtools/http/responder.h>
-#include <cxxtools/serializer.h>
+#include <cxxtools/deserializerbase.h>
 #include <cxxtools/textstream.h>
 
-namespace cxxtools {
+namespace cxxtools
+{
 
-namespace xmlrpc {
+class ServiceProcedure;
+class IComposer;
+class IDecomposer;
+
+namespace xmlrpc
+{
 
 class Service;
-class ServiceProcedure;
 
 class CXXTOOLS_XMLRPC_API XmlRpcResponder : public http::Responder
 {
@@ -62,7 +67,7 @@ class CXXTOOLS_XMLRPC_API XmlRpcResponder : public http::Responder
     };
 
     public:
-        XmlRpcResponder(Service& service);
+        explicit XmlRpcResponder(Service& service);
 
         ~XmlRpcResponder();
 
@@ -79,18 +84,18 @@ class CXXTOOLS_XMLRPC_API XmlRpcResponder : public http::Responder
         void advance(const cxxtools::xml::Node& node);
 
     private:
-       State _state;
-       TextIStream _ts;
-       xml::XmlReader _reader;
-       xml::XmlWriter _writer;
-       Scanner _scanner;
-       Formatter _formatter;
-       Service* _service;
-       DeserializationContext _context;
-       ServiceProcedure* _proc;
-       IDeserializer** _args;
-       ISerializer* _result;
-       Fault _fault;
+        State _state;
+        TextIStream _ts;
+        xml::XmlReader _reader;
+        xml::XmlWriter _writer;
+        Scanner _scanner;
+        Formatter _formatter;
+        DeserializerBase _deserializer;
+        Service* _service;
+        ServiceProcedure* _proc;
+        IComposer** _args;
+        IDecomposer* _result;
+        RemoteException _fault;
 };
 
 }

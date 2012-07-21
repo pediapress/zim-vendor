@@ -80,10 +80,12 @@ DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/acx_pthread.m4 \
 	$(top_srcdir)/m4/asmtype.m4 \
-	$(top_srcdir)/m4/cxxtools_logging.m4 $(top_srcdir)/m4/iconv.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.in
+	$(top_srcdir)/m4/ax_check_compile_flag.m4 \
+	$(top_srcdir)/m4/ax_compiler_vendor.m4 \
+	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -116,30 +118,32 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libcxxtools_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am__libcxxtools_la_SOURCES_DIST = addrinfo.cpp addrinfoimpl.cpp \
-	application.cpp applicationimpl.cpp bindeserializer.cpp \
-	binserializer.cpp char.cpp clock.cpp clockimpl.cpp \
-	condition.cpp conditionimpl.cpp connectable.cpp connection.cpp \
-	cgi.cpp conversionerror.cpp convert.cpp date.cpp datetime.cpp \
+	application.cpp applicationimpl.cpp base64codec.cpp \
+	csvdeserializer.cpp csvformatter.cpp csvparser.cpp char.cpp \
+	clock.cpp clockimpl.cpp condition.cpp conditionimpl.cpp \
+	connectable.cpp connection.cpp cgi.cpp conversionerror.cpp \
+	convert.cpp date.cpp datetime.cpp decomposer.cpp \
 	deserializer.cpp directory.cpp directoryimpl.cpp error.cpp \
 	eventloop.cpp eventsink.cpp eventsource.cpp fdstream.cpp \
-	file.cpp fileimpl.cpp fileinfo.cpp hdstream.cpp inifile.cpp \
-	iniparser.cpp iodevice.cpp iodeviceimpl.cpp ioerror.cpp \
-	iostream.cpp jsonserializer.cpp library.cpp libraryimpl.cpp \
-	log.cpp md5.c md5stream.cpp mime.cpp multifstream.cpp \
-	mutex.cpp muteximpl.cpp pipe.cpp pipeimpl.cpp \
-	posix/commandinput.cpp posix/commandoutput.cpp \
+	file.cpp fileimpl.cpp fileinfo.cpp formatter.cpp hdstream.cpp \
+	inifile.cpp iniparser.cpp iodevice.cpp iodeviceimpl.cpp \
+	ioerror.cpp iostream.cpp jsondeserializer.cpp \
+	jsonformatter.cpp jsonparser.cpp jsonserializer.cpp \
+	library.cpp libraryimpl.cpp log.cpp md5.c md5stream.cpp \
+	mime.cpp multifstream.cpp mutex.cpp muteximpl.cpp pipe.cpp \
+	pipeimpl.cpp posix/commandinput.cpp posix/commandoutput.cpp \
 	posix/pipestream.cpp posix/posixpipe.cpp properties.cpp \
 	query_params.cpp quotedprintablestream.cpp regex.cpp \
 	selectable.cpp selector.cpp selectorimpl.cpp semaphore.cpp \
-	semaphoreimpl.cpp settings.cpp settingsreader.cpp \
-	settingswriter.cpp serializationerror.cpp \
-	serializationinfo.cpp serializer.cpp signal.cpp \
-	streambuffer.cpp string.cpp stringstream.cpp systemerror.cpp \
-	tee.cpp textbuffer.cpp textcodec.cpp textstream.cpp thread.cpp \
-	threadimpl.cpp threadpool.cpp threadpoolimpl.cpp time.cpp \
-	timer.cpp timespan.cpp uri.cpp utf8codec.cpp uuencode.cpp \
-	xmltag.cpp net.cpp tcpserverimpl.cpp tcpserver.cpp \
-	tcpsocket.cpp tcpsocketimpl.cpp udp.cpp udpstream.cpp \
+	semaphoreimpl.cpp serviceregistry.cpp settings.cpp \
+	settingsreader.cpp settingswriter.cpp serializationerror.cpp \
+	serializationinfo.cpp signal.cpp streambuffer.cpp string.cpp \
+	stringstream.cpp systemerror.cpp tee.cpp textbuffer.cpp \
+	textcodec.cpp textstream.cpp thread.cpp threadimpl.cpp \
+	threadpool.cpp threadpoolimpl.cpp time.cpp timer.cpp \
+	timespan.cpp uri.cpp utf8codec.cpp uuencode.cpp xmltag.cpp \
+	net.cpp tcpserverimpl.cpp tcpserver.cpp tcpsocket.cpp \
+	tcpsocketimpl.cpp tcpstream.cpp udp.cpp udpstream.cpp \
 	iconvstream.cpp atomicity.sun.cpp atomicity.windows.cpp \
 	atomicity.gcc.arm.cpp atomicity.gcc.mips.cpp \
 	atomicity.gcc.ppc.cpp atomicity.gcc.x86_64.cpp \
@@ -163,40 +167,45 @@ am__libcxxtools_la_SOURCES_DIST = addrinfo.cpp addrinfoimpl.cpp \
 am_libcxxtools_la_OBJECTS = libcxxtools_la-addrinfo.lo \
 	libcxxtools_la-addrinfoimpl.lo libcxxtools_la-application.lo \
 	libcxxtools_la-applicationimpl.lo \
-	libcxxtools_la-bindeserializer.lo \
-	libcxxtools_la-binserializer.lo libcxxtools_la-char.lo \
-	libcxxtools_la-clock.lo libcxxtools_la-clockimpl.lo \
-	libcxxtools_la-condition.lo libcxxtools_la-conditionimpl.lo \
-	libcxxtools_la-connectable.lo libcxxtools_la-connection.lo \
-	libcxxtools_la-cgi.lo libcxxtools_la-conversionerror.lo \
-	libcxxtools_la-convert.lo libcxxtools_la-date.lo \
-	libcxxtools_la-datetime.lo libcxxtools_la-deserializer.lo \
+	libcxxtools_la-base64codec.lo \
+	libcxxtools_la-csvdeserializer.lo \
+	libcxxtools_la-csvformatter.lo libcxxtools_la-csvparser.lo \
+	libcxxtools_la-char.lo libcxxtools_la-clock.lo \
+	libcxxtools_la-clockimpl.lo libcxxtools_la-condition.lo \
+	libcxxtools_la-conditionimpl.lo libcxxtools_la-connectable.lo \
+	libcxxtools_la-connection.lo libcxxtools_la-cgi.lo \
+	libcxxtools_la-conversionerror.lo libcxxtools_la-convert.lo \
+	libcxxtools_la-date.lo libcxxtools_la-datetime.lo \
+	libcxxtools_la-decomposer.lo libcxxtools_la-deserializer.lo \
 	libcxxtools_la-directory.lo libcxxtools_la-directoryimpl.lo \
 	libcxxtools_la-error.lo libcxxtools_la-eventloop.lo \
 	libcxxtools_la-eventsink.lo libcxxtools_la-eventsource.lo \
 	libcxxtools_la-fdstream.lo libcxxtools_la-file.lo \
 	libcxxtools_la-fileimpl.lo libcxxtools_la-fileinfo.lo \
-	libcxxtools_la-hdstream.lo libcxxtools_la-inifile.lo \
-	libcxxtools_la-iniparser.lo libcxxtools_la-iodevice.lo \
-	libcxxtools_la-iodeviceimpl.lo libcxxtools_la-ioerror.lo \
-	libcxxtools_la-iostream.lo libcxxtools_la-jsonserializer.lo \
-	libcxxtools_la-library.lo libcxxtools_la-libraryimpl.lo \
-	libcxxtools_la-log.lo md5.lo libcxxtools_la-md5stream.lo \
-	libcxxtools_la-mime.lo libcxxtools_la-multifstream.lo \
-	libcxxtools_la-mutex.lo libcxxtools_la-muteximpl.lo \
-	libcxxtools_la-pipe.lo libcxxtools_la-pipeimpl.lo \
-	libcxxtools_la-commandinput.lo libcxxtools_la-commandoutput.lo \
-	libcxxtools_la-pipestream.lo libcxxtools_la-posixpipe.lo \
-	libcxxtools_la-properties.lo libcxxtools_la-query_params.lo \
+	libcxxtools_la-formatter.lo libcxxtools_la-hdstream.lo \
+	libcxxtools_la-inifile.lo libcxxtools_la-iniparser.lo \
+	libcxxtools_la-iodevice.lo libcxxtools_la-iodeviceimpl.lo \
+	libcxxtools_la-ioerror.lo libcxxtools_la-iostream.lo \
+	libcxxtools_la-jsondeserializer.lo \
+	libcxxtools_la-jsonformatter.lo libcxxtools_la-jsonparser.lo \
+	libcxxtools_la-jsonserializer.lo libcxxtools_la-library.lo \
+	libcxxtools_la-libraryimpl.lo libcxxtools_la-log.lo md5.lo \
+	libcxxtools_la-md5stream.lo libcxxtools_la-mime.lo \
+	libcxxtools_la-multifstream.lo libcxxtools_la-mutex.lo \
+	libcxxtools_la-muteximpl.lo libcxxtools_la-pipe.lo \
+	libcxxtools_la-pipeimpl.lo libcxxtools_la-commandinput.lo \
+	libcxxtools_la-commandoutput.lo libcxxtools_la-pipestream.lo \
+	libcxxtools_la-posixpipe.lo libcxxtools_la-properties.lo \
+	libcxxtools_la-query_params.lo \
 	libcxxtools_la-quotedprintablestream.lo \
 	libcxxtools_la-regex.lo libcxxtools_la-selectable.lo \
 	libcxxtools_la-selector.lo libcxxtools_la-selectorimpl.lo \
 	libcxxtools_la-semaphore.lo libcxxtools_la-semaphoreimpl.lo \
-	libcxxtools_la-settings.lo libcxxtools_la-settingsreader.lo \
+	libcxxtools_la-serviceregistry.lo libcxxtools_la-settings.lo \
+	libcxxtools_la-settingsreader.lo \
 	libcxxtools_la-settingswriter.lo \
 	libcxxtools_la-serializationerror.lo \
-	libcxxtools_la-serializationinfo.lo \
-	libcxxtools_la-serializer.lo libcxxtools_la-signal.lo \
+	libcxxtools_la-serializationinfo.lo libcxxtools_la-signal.lo \
 	libcxxtools_la-streambuffer.lo libcxxtools_la-string.lo \
 	libcxxtools_la-stringstream.lo libcxxtools_la-systemerror.lo \
 	libcxxtools_la-tee.lo libcxxtools_la-textbuffer.lo \
@@ -209,12 +218,12 @@ am_libcxxtools_la_OBJECTS = libcxxtools_la-addrinfo.lo \
 	libcxxtools_la-xmltag.lo libcxxtools_la-net.lo \
 	libcxxtools_la-tcpserverimpl.lo libcxxtools_la-tcpserver.lo \
 	libcxxtools_la-tcpsocket.lo libcxxtools_la-tcpsocketimpl.lo \
-	libcxxtools_la-udp.lo libcxxtools_la-udpstream.lo \
-	$(am__objects_1) $(am__objects_2) $(am__objects_3) \
-	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
-	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
-	$(am__objects_10) $(am__objects_11) $(am__objects_12) \
-	$(am__objects_13)
+	libcxxtools_la-tcpstream.lo libcxxtools_la-udp.lo \
+	libcxxtools_la-udpstream.lo $(am__objects_1) $(am__objects_2) \
+	$(am__objects_3) $(am__objects_4) $(am__objects_5) \
+	$(am__objects_6) $(am__objects_7) $(am__objects_8) \
+	$(am__objects_9) $(am__objects_10) $(am__objects_11) \
+	$(am__objects_12) $(am__objects_13)
 libcxxtools_la_OBJECTS = $(am_libcxxtools_la_OBJECTS)
 libcxxtools_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) \
@@ -266,7 +275,6 @@ CXXFLAGS = @CXXFLAGS@
 CXXTOOLS_ATOMICITY = @CXXTOOLS_ATOMICITY@
 CXXTOOLS_CXXFLAGS = @CXXTOOLS_CXXFLAGS@
 CXXTOOLS_LDFLAGS = @CXXTOOLS_LDFLAGS@
-CXXTOOLS_LOGGING = @CXXTOOLS_LOGGING@
 CXXTOOLS_STD_LOCALE = @CXXTOOLS_STD_LOCALE@
 CXXTOOLS_SUSECONDS = @CXXTOOLS_SUSECONDS@
 CYGPATH_W = @CYGPATH_W@
@@ -301,7 +309,6 @@ LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBICONV = @LTLIBICONV@
 LTLIBOBJS = @LTLIBOBJS@
-MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -330,7 +337,6 @@ SET_MAKE = @SET_MAKE@
 SHARED_LIB_FLAG = @SHARED_LIB_FLAG@
 SHELL = @SHELL@
 STRIP = @STRIP@
-TESTDIR = @TESTDIR@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -390,30 +396,32 @@ top_srcdir = @top_srcdir@
 AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_builddir)/include -I$(top_srcdir)/include
 lib_LTLIBRARIES = libcxxtools.la
 libcxxtools_la_SOURCES = addrinfo.cpp addrinfoimpl.cpp application.cpp \
-	applicationimpl.cpp bindeserializer.cpp binserializer.cpp \
-	char.cpp clock.cpp clockimpl.cpp condition.cpp \
-	conditionimpl.cpp connectable.cpp connection.cpp cgi.cpp \
-	conversionerror.cpp convert.cpp date.cpp datetime.cpp \
-	deserializer.cpp directory.cpp directoryimpl.cpp error.cpp \
-	eventloop.cpp eventsink.cpp eventsource.cpp fdstream.cpp \
-	file.cpp fileimpl.cpp fileinfo.cpp hdstream.cpp inifile.cpp \
-	iniparser.cpp iodevice.cpp iodeviceimpl.cpp ioerror.cpp \
-	iostream.cpp jsonserializer.cpp library.cpp libraryimpl.cpp \
-	log.cpp md5.c md5stream.cpp mime.cpp multifstream.cpp \
-	mutex.cpp muteximpl.cpp pipe.cpp pipeimpl.cpp \
-	posix/commandinput.cpp posix/commandoutput.cpp \
+	applicationimpl.cpp base64codec.cpp csvdeserializer.cpp \
+	csvformatter.cpp csvparser.cpp char.cpp clock.cpp \
+	clockimpl.cpp condition.cpp conditionimpl.cpp connectable.cpp \
+	connection.cpp cgi.cpp conversionerror.cpp convert.cpp \
+	date.cpp datetime.cpp decomposer.cpp deserializer.cpp \
+	directory.cpp directoryimpl.cpp error.cpp eventloop.cpp \
+	eventsink.cpp eventsource.cpp fdstream.cpp file.cpp \
+	fileimpl.cpp fileinfo.cpp formatter.cpp hdstream.cpp \
+	inifile.cpp iniparser.cpp iodevice.cpp iodeviceimpl.cpp \
+	ioerror.cpp iostream.cpp jsondeserializer.cpp \
+	jsonformatter.cpp jsonparser.cpp jsonserializer.cpp \
+	library.cpp libraryimpl.cpp log.cpp md5.c md5stream.cpp \
+	mime.cpp multifstream.cpp mutex.cpp muteximpl.cpp pipe.cpp \
+	pipeimpl.cpp posix/commandinput.cpp posix/commandoutput.cpp \
 	posix/pipestream.cpp posix/posixpipe.cpp properties.cpp \
 	query_params.cpp quotedprintablestream.cpp regex.cpp \
 	selectable.cpp selector.cpp selectorimpl.cpp semaphore.cpp \
-	semaphoreimpl.cpp settings.cpp settingsreader.cpp \
-	settingswriter.cpp serializationerror.cpp \
-	serializationinfo.cpp serializer.cpp signal.cpp \
-	streambuffer.cpp string.cpp stringstream.cpp systemerror.cpp \
-	tee.cpp textbuffer.cpp textcodec.cpp textstream.cpp thread.cpp \
-	threadimpl.cpp threadpool.cpp threadpoolimpl.cpp time.cpp \
-	timer.cpp timespan.cpp uri.cpp utf8codec.cpp uuencode.cpp \
-	xmltag.cpp net.cpp tcpserverimpl.cpp tcpserver.cpp \
-	tcpsocket.cpp tcpsocketimpl.cpp udp.cpp udpstream.cpp \
+	semaphoreimpl.cpp serviceregistry.cpp settings.cpp \
+	settingsreader.cpp settingswriter.cpp serializationerror.cpp \
+	serializationinfo.cpp signal.cpp streambuffer.cpp string.cpp \
+	stringstream.cpp systemerror.cpp tee.cpp textbuffer.cpp \
+	textcodec.cpp textstream.cpp thread.cpp threadimpl.cpp \
+	threadpool.cpp threadpoolimpl.cpp time.cpp timer.cpp \
+	timespan.cpp uri.cpp utf8codec.cpp uuencode.cpp xmltag.cpp \
+	net.cpp tcpserverimpl.cpp tcpserver.cpp tcpsocket.cpp \
+	tcpsocketimpl.cpp tcpstream.cpp udp.cpp udpstream.cpp \
 	$(am__append_1) $(am__append_2) $(am__append_3) \
 	$(am__append_4) $(am__append_5) $(am__append_6) \
 	$(am__append_7) $(am__append_8) $(am__append_9) \
@@ -431,9 +439,9 @@ noinst_HEADERS = \
 	fileinfoimpl.h \
 	iodeviceimpl.h \
 	libraryimpl.h \
+	md5.h \
 	muteximpl.h \
 	pipeimpl.h \
-	processimpl.h \
 	selectableimpl.h \
 	selectorimpl.h \
 	semaphoreimpl.h \
@@ -447,13 +455,13 @@ noinst_HEADERS = \
 
 libcxxtools_la_LIBADD = $(LIBICONV)
 libcxxtools_la_CXXFLAGS = $(PTHREAD_CFLAGS)
-libcxxtools_la_LDFLAGS = -version-info @sonumber@ $(PTHREAD_LIBS)
+libcxxtools_la_LDFLAGS = -version-info @sonumber@ $(PTHREAD_LIBS) @SHARED_LIB_FLAG@
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .cpp .lo .o .obj
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -478,9 +486,9 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 
-$(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
+$(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
+$(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 
@@ -493,7 +501,7 @@ config.h: stamp-h1
 stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
 	@rm -f stamp-h1
 	cd $(top_builddir) && $(SHELL) ./config.status src/config.h
-$(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps) 
+$(srcdir)/config.h.in:  $(am__configure_deps) 
 	($(am__cd) $(top_srcdir) && $(AUTOHEADER))
 	rm -f stamp-h1
 	touch $@
@@ -556,8 +564,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-atomicity.pthread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-atomicity.sun.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-atomicity.windows.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-bindeserializer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-binserializer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-base64codec.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-cgi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-char.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-clock.Plo@am__quote@
@@ -570,8 +577,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-conversionerror.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-convert.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-csvdeserializer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-csvformatter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-csvparser.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-date.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-datetime.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-decomposer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-deserializer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-directory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-directoryimpl.Plo@am__quote@
@@ -583,6 +594,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-file.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-fileimpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-fileinfo.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-formatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-hdstream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-iconvstream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-inifile.Plo@am__quote@
@@ -591,6 +603,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-iodeviceimpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-ioerror.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-iostream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-jsondeserializer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-jsonformatter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-jsonparser.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-jsonserializer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-library.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-libraryimpl.Plo@am__quote@
@@ -616,7 +631,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-semaphoreimpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-serializationerror.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-serializationinfo.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-serializer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-serviceregistry.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-settings.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-settingsreader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-settingswriter.Plo@am__quote@
@@ -629,6 +644,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-tcpserverimpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-tcpsocket.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-tcpsocketimpl.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-tcpstream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-tee.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-textbuffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcxxtools_la-textcodec.Plo@am__quote@
@@ -718,19 +734,33 @@ libcxxtools_la-applicationimpl.lo: applicationimpl.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-applicationimpl.lo `test -f 'applicationimpl.cpp' || echo '$(srcdir)/'`applicationimpl.cpp
 
-libcxxtools_la-bindeserializer.lo: bindeserializer.cpp
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-bindeserializer.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-bindeserializer.Tpo -c -o libcxxtools_la-bindeserializer.lo `test -f 'bindeserializer.cpp' || echo '$(srcdir)/'`bindeserializer.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-bindeserializer.Tpo $(DEPDIR)/libcxxtools_la-bindeserializer.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='bindeserializer.cpp' object='libcxxtools_la-bindeserializer.lo' libtool=yes @AMDEPBACKSLASH@
+libcxxtools_la-base64codec.lo: base64codec.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-base64codec.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-base64codec.Tpo -c -o libcxxtools_la-base64codec.lo `test -f 'base64codec.cpp' || echo '$(srcdir)/'`base64codec.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-base64codec.Tpo $(DEPDIR)/libcxxtools_la-base64codec.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='base64codec.cpp' object='libcxxtools_la-base64codec.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-bindeserializer.lo `test -f 'bindeserializer.cpp' || echo '$(srcdir)/'`bindeserializer.cpp
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-base64codec.lo `test -f 'base64codec.cpp' || echo '$(srcdir)/'`base64codec.cpp
 
-libcxxtools_la-binserializer.lo: binserializer.cpp
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-binserializer.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-binserializer.Tpo -c -o libcxxtools_la-binserializer.lo `test -f 'binserializer.cpp' || echo '$(srcdir)/'`binserializer.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-binserializer.Tpo $(DEPDIR)/libcxxtools_la-binserializer.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='binserializer.cpp' object='libcxxtools_la-binserializer.lo' libtool=yes @AMDEPBACKSLASH@
+libcxxtools_la-csvdeserializer.lo: csvdeserializer.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-csvdeserializer.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-csvdeserializer.Tpo -c -o libcxxtools_la-csvdeserializer.lo `test -f 'csvdeserializer.cpp' || echo '$(srcdir)/'`csvdeserializer.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-csvdeserializer.Tpo $(DEPDIR)/libcxxtools_la-csvdeserializer.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='csvdeserializer.cpp' object='libcxxtools_la-csvdeserializer.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-binserializer.lo `test -f 'binserializer.cpp' || echo '$(srcdir)/'`binserializer.cpp
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-csvdeserializer.lo `test -f 'csvdeserializer.cpp' || echo '$(srcdir)/'`csvdeserializer.cpp
+
+libcxxtools_la-csvformatter.lo: csvformatter.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-csvformatter.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-csvformatter.Tpo -c -o libcxxtools_la-csvformatter.lo `test -f 'csvformatter.cpp' || echo '$(srcdir)/'`csvformatter.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-csvformatter.Tpo $(DEPDIR)/libcxxtools_la-csvformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='csvformatter.cpp' object='libcxxtools_la-csvformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-csvformatter.lo `test -f 'csvformatter.cpp' || echo '$(srcdir)/'`csvformatter.cpp
+
+libcxxtools_la-csvparser.lo: csvparser.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-csvparser.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-csvparser.Tpo -c -o libcxxtools_la-csvparser.lo `test -f 'csvparser.cpp' || echo '$(srcdir)/'`csvparser.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-csvparser.Tpo $(DEPDIR)/libcxxtools_la-csvparser.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='csvparser.cpp' object='libcxxtools_la-csvparser.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-csvparser.lo `test -f 'csvparser.cpp' || echo '$(srcdir)/'`csvparser.cpp
 
 libcxxtools_la-char.lo: char.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-char.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-char.Tpo -c -o libcxxtools_la-char.lo `test -f 'char.cpp' || echo '$(srcdir)/'`char.cpp
@@ -816,6 +846,13 @@ libcxxtools_la-datetime.lo: datetime.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-datetime.lo `test -f 'datetime.cpp' || echo '$(srcdir)/'`datetime.cpp
 
+libcxxtools_la-decomposer.lo: decomposer.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-decomposer.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-decomposer.Tpo -c -o libcxxtools_la-decomposer.lo `test -f 'decomposer.cpp' || echo '$(srcdir)/'`decomposer.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-decomposer.Tpo $(DEPDIR)/libcxxtools_la-decomposer.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='decomposer.cpp' object='libcxxtools_la-decomposer.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-decomposer.lo `test -f 'decomposer.cpp' || echo '$(srcdir)/'`decomposer.cpp
+
 libcxxtools_la-deserializer.lo: deserializer.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-deserializer.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-deserializer.Tpo -c -o libcxxtools_la-deserializer.lo `test -f 'deserializer.cpp' || echo '$(srcdir)/'`deserializer.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-deserializer.Tpo $(DEPDIR)/libcxxtools_la-deserializer.Plo
@@ -893,6 +930,13 @@ libcxxtools_la-fileinfo.lo: fileinfo.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-fileinfo.lo `test -f 'fileinfo.cpp' || echo '$(srcdir)/'`fileinfo.cpp
 
+libcxxtools_la-formatter.lo: formatter.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-formatter.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-formatter.Tpo -c -o libcxxtools_la-formatter.lo `test -f 'formatter.cpp' || echo '$(srcdir)/'`formatter.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-formatter.Tpo $(DEPDIR)/libcxxtools_la-formatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='formatter.cpp' object='libcxxtools_la-formatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-formatter.lo `test -f 'formatter.cpp' || echo '$(srcdir)/'`formatter.cpp
+
 libcxxtools_la-hdstream.lo: hdstream.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-hdstream.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-hdstream.Tpo -c -o libcxxtools_la-hdstream.lo `test -f 'hdstream.cpp' || echo '$(srcdir)/'`hdstream.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-hdstream.Tpo $(DEPDIR)/libcxxtools_la-hdstream.Plo
@@ -941,6 +985,27 @@ libcxxtools_la-iostream.lo: iostream.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='iostream.cpp' object='libcxxtools_la-iostream.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-iostream.lo `test -f 'iostream.cpp' || echo '$(srcdir)/'`iostream.cpp
+
+libcxxtools_la-jsondeserializer.lo: jsondeserializer.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-jsondeserializer.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-jsondeserializer.Tpo -c -o libcxxtools_la-jsondeserializer.lo `test -f 'jsondeserializer.cpp' || echo '$(srcdir)/'`jsondeserializer.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-jsondeserializer.Tpo $(DEPDIR)/libcxxtools_la-jsondeserializer.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='jsondeserializer.cpp' object='libcxxtools_la-jsondeserializer.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-jsondeserializer.lo `test -f 'jsondeserializer.cpp' || echo '$(srcdir)/'`jsondeserializer.cpp
+
+libcxxtools_la-jsonformatter.lo: jsonformatter.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-jsonformatter.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-jsonformatter.Tpo -c -o libcxxtools_la-jsonformatter.lo `test -f 'jsonformatter.cpp' || echo '$(srcdir)/'`jsonformatter.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-jsonformatter.Tpo $(DEPDIR)/libcxxtools_la-jsonformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='jsonformatter.cpp' object='libcxxtools_la-jsonformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-jsonformatter.lo `test -f 'jsonformatter.cpp' || echo '$(srcdir)/'`jsonformatter.cpp
+
+libcxxtools_la-jsonparser.lo: jsonparser.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-jsonparser.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-jsonparser.Tpo -c -o libcxxtools_la-jsonparser.lo `test -f 'jsonparser.cpp' || echo '$(srcdir)/'`jsonparser.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-jsonparser.Tpo $(DEPDIR)/libcxxtools_la-jsonparser.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='jsonparser.cpp' object='libcxxtools_la-jsonparser.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-jsonparser.lo `test -f 'jsonparser.cpp' || echo '$(srcdir)/'`jsonparser.cpp
 
 libcxxtools_la-jsonserializer.lo: jsonserializer.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-jsonserializer.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-jsonserializer.Tpo -c -o libcxxtools_la-jsonserializer.lo `test -f 'jsonserializer.cpp' || echo '$(srcdir)/'`jsonserializer.cpp
@@ -1110,6 +1175,13 @@ libcxxtools_la-semaphoreimpl.lo: semaphoreimpl.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-semaphoreimpl.lo `test -f 'semaphoreimpl.cpp' || echo '$(srcdir)/'`semaphoreimpl.cpp
 
+libcxxtools_la-serviceregistry.lo: serviceregistry.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-serviceregistry.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-serviceregistry.Tpo -c -o libcxxtools_la-serviceregistry.lo `test -f 'serviceregistry.cpp' || echo '$(srcdir)/'`serviceregistry.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-serviceregistry.Tpo $(DEPDIR)/libcxxtools_la-serviceregistry.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='serviceregistry.cpp' object='libcxxtools_la-serviceregistry.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-serviceregistry.lo `test -f 'serviceregistry.cpp' || echo '$(srcdir)/'`serviceregistry.cpp
+
 libcxxtools_la-settings.lo: settings.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-settings.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-settings.Tpo -c -o libcxxtools_la-settings.lo `test -f 'settings.cpp' || echo '$(srcdir)/'`settings.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-settings.Tpo $(DEPDIR)/libcxxtools_la-settings.Plo
@@ -1144,13 +1216,6 @@ libcxxtools_la-serializationinfo.lo: serializationinfo.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='serializationinfo.cpp' object='libcxxtools_la-serializationinfo.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-serializationinfo.lo `test -f 'serializationinfo.cpp' || echo '$(srcdir)/'`serializationinfo.cpp
-
-libcxxtools_la-serializer.lo: serializer.cpp
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-serializer.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-serializer.Tpo -c -o libcxxtools_la-serializer.lo `test -f 'serializer.cpp' || echo '$(srcdir)/'`serializer.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-serializer.Tpo $(DEPDIR)/libcxxtools_la-serializer.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='serializer.cpp' object='libcxxtools_la-serializer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-serializer.lo `test -f 'serializer.cpp' || echo '$(srcdir)/'`serializer.cpp
 
 libcxxtools_la-signal.lo: signal.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-signal.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-signal.Tpo -c -o libcxxtools_la-signal.lo `test -f 'signal.cpp' || echo '$(srcdir)/'`signal.cpp
@@ -1326,6 +1391,13 @@ libcxxtools_la-tcpsocketimpl.lo: tcpsocketimpl.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='tcpsocketimpl.cpp' object='libcxxtools_la-tcpsocketimpl.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-tcpsocketimpl.lo `test -f 'tcpsocketimpl.cpp' || echo '$(srcdir)/'`tcpsocketimpl.cpp
+
+libcxxtools_la-tcpstream.lo: tcpstream.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-tcpstream.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-tcpstream.Tpo -c -o libcxxtools_la-tcpstream.lo `test -f 'tcpstream.cpp' || echo '$(srcdir)/'`tcpstream.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcxxtools_la-tcpstream.Tpo $(DEPDIR)/libcxxtools_la-tcpstream.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='tcpstream.cpp' object='libcxxtools_la-tcpstream.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -c -o libcxxtools_la-tcpstream.lo `test -f 'tcpstream.cpp' || echo '$(srcdir)/'`tcpstream.cpp
 
 libcxxtools_la-udp.lo: udp.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcxxtools_la_CXXFLAGS) $(CXXFLAGS) -MT libcxxtools_la-udp.lo -MD -MP -MF $(DEPDIR)/libcxxtools_la-udp.Tpo -c -o libcxxtools_la-udp.lo `test -f 'udp.cpp' || echo '$(srcdir)/'`udp.cpp

@@ -44,17 +44,20 @@ noinst_PROGRAMS = arg$(EXEEXT) arg-set$(EXEEXT) cgi$(EXEEXT) \
 	signals$(EXEEXT) thread$(EXEEXT) threadpool$(EXEEXT) \
 	uuencode$(EXEEXT) cxxlog$(EXEEXT) rpcserver$(EXEEXT) \
 	rpcechoclient$(EXEEXT) rpcaddclient$(EXEEXT) splitter$(EXEEXT) \
-	json$(EXEEXT) regex$(EXEEXT) execLs$(EXEEXT) $(am__EXEEXT_1)
+	json$(EXEEXT) regex$(EXEEXT) execLs$(EXEEXT) \
+	rpcasyncaddclient$(EXEEXT) $(am__EXEEXT_1)
 @MAKE_ICONVSTREAM_TRUE@am__append_1 = iconv
 subdir = demo
 DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/acx_pthread.m4 \
 	$(top_srcdir)/m4/asmtype.m4 \
-	$(top_srcdir)/m4/cxxtools_logging.m4 $(top_srcdir)/m4/iconv.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.in
+	$(top_srcdir)/m4/ax_check_compile_flag.m4 \
+	$(top_srcdir)/m4/ax_compiler_vendor.m4 \
+	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -163,13 +166,17 @@ regex_LDADD = $(LDADD)
 regex_DEPENDENCIES = $(top_builddir)/src/libcxxtools.la
 am_rpcaddclient_OBJECTS = rpcaddclient.$(OBJEXT)
 rpcaddclient_OBJECTS = $(am_rpcaddclient_OBJECTS)
-rpcaddclient_DEPENDENCIES = $(XMLRPC_LIBS)
+rpcaddclient_DEPENDENCIES = $(XMLRPC_LIBS) $(BIN_LIBS) $(JSON_LIBS)
+am_rpcasyncaddclient_OBJECTS = rpcasyncaddclient.$(OBJEXT)
+rpcasyncaddclient_OBJECTS = $(am_rpcasyncaddclient_OBJECTS)
+rpcasyncaddclient_DEPENDENCIES = $(XMLRPC_LIBS) $(BIN_LIBS) \
+	$(JSON_LIBS)
 am_rpcechoclient_OBJECTS = rpcechoclient.$(OBJEXT)
 rpcechoclient_OBJECTS = $(am_rpcechoclient_OBJECTS)
-rpcechoclient_DEPENDENCIES = $(XMLRPC_LIBS)
+rpcechoclient_DEPENDENCIES = $(XMLRPC_LIBS) $(BIN_LIBS) $(JSON_LIBS)
 am_rpcserver_OBJECTS = rpcserver.$(OBJEXT)
 rpcserver_OBJECTS = $(am_rpcserver_OBJECTS)
-rpcserver_DEPENDENCIES = $(XMLRPC_LIBS)
+rpcserver_DEPENDENCIES = $(XMLRPC_LIBS) $(BIN_LIBS) $(JSON_LIBS)
 am_signals_OBJECTS = signals.$(OBJEXT)
 signals_OBJECTS = $(am_signals_OBJECTS)
 signals_LDADD = $(LDADD)
@@ -212,9 +219,9 @@ SOURCES = $(arg_SOURCES) $(arg_set_SOURCES) $(cgi_SOURCES) \
 	$(multifstream_SOURCES) $(netcat_SOURCES) $(netio_SOURCES) \
 	$(netmsg_SOURCES) $(pipestream_SOURCES) $(pool_SOURCES) \
 	$(regex_SOURCES) $(rpcaddclient_SOURCES) \
-	$(rpcechoclient_SOURCES) $(rpcserver_SOURCES) \
-	$(signals_SOURCES) $(splitter_SOURCES) $(thread_SOURCES) \
-	$(threadpool_SOURCES) $(uuencode_SOURCES)
+	$(rpcasyncaddclient_SOURCES) $(rpcechoclient_SOURCES) \
+	$(rpcserver_SOURCES) $(signals_SOURCES) $(splitter_SOURCES) \
+	$(thread_SOURCES) $(threadpool_SOURCES) $(uuencode_SOURCES)
 DIST_SOURCES = $(arg_SOURCES) $(arg_set_SOURCES) $(cgi_SOURCES) \
 	$(cxxlog_SOURCES) $(dir_SOURCES) $(dlloader_SOURCES) \
 	$(execLs_SOURCES) $(getini_SOURCES) $(hd_SOURCES) \
@@ -224,9 +231,9 @@ DIST_SOURCES = $(arg_SOURCES) $(arg_set_SOURCES) $(cgi_SOURCES) \
 	$(mime_SOURCES) $(multifstream_SOURCES) $(netcat_SOURCES) \
 	$(netio_SOURCES) $(netmsg_SOURCES) $(pipestream_SOURCES) \
 	$(pool_SOURCES) $(regex_SOURCES) $(rpcaddclient_SOURCES) \
-	$(rpcechoclient_SOURCES) $(rpcserver_SOURCES) \
-	$(signals_SOURCES) $(splitter_SOURCES) $(thread_SOURCES) \
-	$(threadpool_SOURCES) $(uuencode_SOURCES)
+	$(rpcasyncaddclient_SOURCES) $(rpcechoclient_SOURCES) \
+	$(rpcserver_SOURCES) $(signals_SOURCES) $(splitter_SOURCES) \
+	$(thread_SOURCES) $(threadpool_SOURCES) $(uuencode_SOURCES)
 DATA = $(noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -249,7 +256,6 @@ CXXFLAGS = @CXXFLAGS@
 CXXTOOLS_ATOMICITY = @CXXTOOLS_ATOMICITY@
 CXXTOOLS_CXXFLAGS = @CXXTOOLS_CXXFLAGS@
 CXXTOOLS_LDFLAGS = @CXXTOOLS_LDFLAGS@
-CXXTOOLS_LOGGING = @CXXTOOLS_LOGGING@
 CXXTOOLS_STD_LOCALE = @CXXTOOLS_STD_LOCALE@
 CXXTOOLS_SUSECONDS = @CXXTOOLS_SUSECONDS@
 CYGPATH_W = @CYGPATH_W@
@@ -284,7 +290,6 @@ LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBICONV = @LTLIBICONV@
 LTLIBOBJS = @LTLIBOBJS@
-MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -313,7 +318,6 @@ SET_MAKE = @SET_MAKE@
 SHARED_LIB_FLAG = @SHARED_LIB_FLAG@
 SHELL = @SHELL@
 STRIP = @STRIP@
-TESTDIR = @TESTDIR@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -402,19 +406,24 @@ splitter_SOURCES = splitter.cpp
 json_SOURCES = json.cpp
 regex_SOURCES = regex.cpp
 execLs_SOURCES = execLs.cpp
+rpcasyncaddclient_SOURCES = rpcasyncaddclient.cpp
 @MAKE_ICONVSTREAM_TRUE@iconv_SOURCES = iconv.cpp
-HTTP_LIBS = $(top_builddir)/src/http/libcxxtools-http.la
-XML_LIBS = $(top_builddir)/src/xml/libcxxtools-xml.la
-XMLRPC_LIBS = $(top_builddir)/src/xmlrpc/libcxxtools-xmlrpc.la
+BASE_LIBS = $(top_builddir)/src/libcxxtools.la
+HTTP_LIBS = $(BASE_LIBS) $(top_builddir)/src/http/libcxxtools-http.la
+XML_LIBS = $(BASE_LIBS) $(top_builddir)/src/xml/libcxxtools-xml.la
+XMLRPC_LIBS = $(XML_LIBS) $(top_builddir)/src/xmlrpc/libcxxtools-xmlrpc.la
+BIN_LIBS = $(HTTP_LIBS) $(top_builddir)/src/bin/libcxxtools-bin.la
+JSON_LIBS = $(HTTP_LIBS) $(top_builddir)/src/json/libcxxtools-json.la
 AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_builddir)/include -I$(top_srcdir)/include
 LDADD = $(top_builddir)/src/libcxxtools.la
 AM_CXXFLAGS = $(PTHREAD_CFLAGS)
 httpserver_LDADD = $(HTTP_LIBS)
 httprequest_LDADD = $(HTTP_LIBS)
-rpcserver_LDADD = $(XMLRPC_LIBS)
-rpcechoclient_LDADD = $(XMLRPC_LIBS)
-rpcaddclient_LDADD = $(XMLRPC_LIBS)
+rpcserver_LDADD = $(XMLRPC_LIBS) $(BIN_LIBS) $(JSON_LIBS)
+rpcechoclient_LDADD = $(XMLRPC_LIBS) $(BIN_LIBS) $(JSON_LIBS)
+rpcaddclient_LDADD = $(XMLRPC_LIBS) $(BIN_LIBS) $(JSON_LIBS)
 json_LDADD = $(HTTP_LIBS)
+rpcasyncaddclient_LDADD = $(XMLRPC_LIBS) $(BIN_LIBS) $(JSON_LIBS)
 noinst_DATA = log.properties
 CLEANFILES = log.properties
 EXTRA_DIST = README
@@ -422,7 +431,7 @@ all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .cpp .lo .o .obj
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -447,9 +456,9 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 
-$(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
+$(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
+$(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 
@@ -539,6 +548,9 @@ regex$(EXEEXT): $(regex_OBJECTS) $(regex_DEPENDENCIES)
 rpcaddclient$(EXEEXT): $(rpcaddclient_OBJECTS) $(rpcaddclient_DEPENDENCIES) 
 	@rm -f rpcaddclient$(EXEEXT)
 	$(CXXLINK) $(rpcaddclient_OBJECTS) $(rpcaddclient_LDADD) $(LIBS)
+rpcasyncaddclient$(EXEEXT): $(rpcasyncaddclient_OBJECTS) $(rpcasyncaddclient_DEPENDENCIES) 
+	@rm -f rpcasyncaddclient$(EXEEXT)
+	$(CXXLINK) $(rpcasyncaddclient_OBJECTS) $(rpcasyncaddclient_LDADD) $(LIBS)
 rpcechoclient$(EXEEXT): $(rpcechoclient_OBJECTS) $(rpcechoclient_DEPENDENCIES) 
 	@rm -f rpcechoclient$(EXEEXT)
 	$(CXXLINK) $(rpcechoclient_OBJECTS) $(rpcechoclient_LDADD) $(LIBS)
@@ -593,6 +605,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pool.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regex.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rpcaddclient.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rpcasyncaddclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rpcechoclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rpcserver.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signals.Po@am__quote@

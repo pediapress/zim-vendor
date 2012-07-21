@@ -31,6 +31,9 @@
 #include <cxxtools/log.h>
 #include <cxxtools/xmlrpc/service.h>
 #include <cxxtools/http/server.h>
+#include <cxxtools/bin/rpcserver.h>
+#include <cxxtools/json/rpcserver.h>
+#include <cxxtools/json/httpservice.h>
 #include <cxxtools/eventloop.h>
 
 ////////////////////////////////////////////////////////////////////////
@@ -58,14 +61,19 @@ int main(int argc, char* argv[])
 
     cxxtools::Arg<std::string> ip(argc, argv, 'i');
     cxxtools::Arg<unsigned short> port(argc, argv, 'p', 7002);
+    cxxtools::Arg<unsigned short> bport(argc, argv, 'b', 7003);
+    cxxtools::Arg<unsigned short> jport(argc, argv, 'j', 7004);
 
-    std::cout << "run rpcecho server" << std::endl;
+    std::cout << "run rpcecho server\n"
+              << "http protocol on port "<< port.getValue() << "\n"
+              << "binary protocol on port " << bport.getValue() << "\n"
+              << "json protocol on port " << jport.getValue() << std::endl;
 
     // create an event loop
     cxxtools::EventLoop loop;
 
     // the http server is instantiated with an ip address and a port number
-    cxxtools::http::Server server(loop, ip, port);
+    cxxtools::http::Server httpServer(loop, ip, port);
 
     // we create an instance of the service class
     cxxtools::xmlrpc::Service service;
@@ -75,7 +83,26 @@ int main(int argc, char* argv[])
     service.registerFunction("add", add);
 
     // ... and register the service under a url
-    server.addService("/myservice", service);
+    httpServer.addService("/xmlrpc", service);
+
+    // for the binary rpc server we define a binary server
+    cxxtools::bin::RpcServer binServer(loop, ip, bport);
+
+    // and register the functions in the server
+    binServer.registerFunction("echo", echo);
+    binServer.registerFunction("add", add);
+
+    // for the json rpc server we define a json server
+    cxxtools::json::RpcServer jsonServer(loop, ip, jport);
+
+    // and register the functions in the server
+    jsonServer.registerFunction("echo", echo);
+    jsonServer.registerFunction("add", add);
+
+    cxxtools::json::HttpService jsonhttpService;
+    jsonhttpService.registerFunction("echo", echo);
+    jsonhttpService.registerFunction("add", add);
+    httpServer.addService("/jsonrpc", jsonhttpService);
 
     // now start the server and run the event loop
     loop.run();

@@ -7,8 +7,10 @@ libcxxtools_la_SOURCES = \
 	addrinfoimpl.cpp \
 	application.cpp \
 	applicationimpl.cpp \
-	bindeserializer.cpp \
-	binserializer.cpp \
+	base64codec.cpp \
+	csvdeserializer.cpp \
+	csvformatter.cpp \
+	csvparser.cpp \
 	char.cpp \
 	clock.cpp \
 	clockimpl.cpp \
@@ -21,6 +23,7 @@ libcxxtools_la_SOURCES = \
 	convert.cpp \
 	date.cpp \
 	datetime.cpp \
+	decomposer.cpp \
 	deserializer.cpp \
 	directory.cpp \
 	directoryimpl.cpp \
@@ -32,6 +35,7 @@ libcxxtools_la_SOURCES = \
 	file.cpp \
 	fileimpl.cpp \
 	fileinfo.cpp \
+	formatter.cpp \
 	hdstream.cpp \
 	inifile.cpp \
 	iniparser.cpp \
@@ -39,6 +43,9 @@ libcxxtools_la_SOURCES = \
 	iodeviceimpl.cpp \
 	ioerror.cpp \
 	iostream.cpp \
+	jsondeserializer.cpp \
+	jsonformatter.cpp \
+	jsonparser.cpp \
 	jsonserializer.cpp \
 	library.cpp \
 	libraryimpl.cpp \
@@ -64,12 +71,12 @@ libcxxtools_la_SOURCES = \
 	selectorimpl.cpp \
 	semaphore.cpp \
 	semaphoreimpl.cpp \
+	serviceregistry.cpp \
 	settings.cpp \
 	settingsreader.cpp \
 	settingswriter.cpp \
 	serializationerror.cpp \
 	serializationinfo.cpp \
-	serializer.cpp \
 	signal.cpp \
 	streambuffer.cpp \
 	string.cpp \
@@ -95,6 +102,7 @@ libcxxtools_la_SOURCES = \
 	tcpserver.cpp \
 	tcpsocket.cpp \
 	tcpsocketimpl.cpp \
+	tcpstream.cpp \
 	udp.cpp \
 	udpstream.cpp
 
@@ -110,9 +118,9 @@ noinst_HEADERS = \
 	fileinfoimpl.h \
 	iodeviceimpl.h \
 	libraryimpl.h \
+	md5.h \
 	muteximpl.h \
 	pipeimpl.h \
-	processimpl.h \
 	selectableimpl.h \
 	selectorimpl.h \
 	semaphoreimpl.h \
@@ -191,4 +199,4 @@ endif
 
 libcxxtools_la_LIBADD = $(LIBICONV)
 libcxxtools_la_CXXFLAGS = $(PTHREAD_CFLAGS)
-libcxxtools_la_LDFLAGS = -version-info @sonumber@ $(PTHREAD_LIBS)
+libcxxtools_la_LDFLAGS = -version-info @sonumber@ $(PTHREAD_LIBS) @SHARED_LIB_FLAG@
