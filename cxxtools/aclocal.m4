@@ -1,7 +1,8 @@
-# generated automatically by aclocal 1.11.1 -*- Autoconf -*-
+# generated automatically by aclocal 1.11.5 -*- Autoconf -*-
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-# 2005, 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
+# 2005, 2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation,
+# Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -13,17 +14,127 @@
 
 m4_ifndef([AC_AUTOCONF_VERSION],
   [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
-m4_if(m4_defn([AC_AUTOCONF_VERSION]), [2.68],,
-[m4_warning([this file was generated for autoconf 2.68.
+m4_if(m4_defn([AC_AUTOCONF_VERSION]), [2.69],,
+[m4_warning([this file was generated for autoconf 2.69.
 You have another version of autoconf.  It may work, but is not guaranteed to.
 If you have problems, you may need to regenerate the build system entirely.
 To do so, use the procedure documented by the package, typically `autoreconf'.])])
 
-# Copyright (C) 2002, 2003, 2005, 2006, 2007, 2008  Free Software Foundation, Inc.
+# longlong.m4 serial 14
+dnl Copyright (C) 1999-2007, 2009-2010 Free Software Foundation, Inc.
+dnl This file is free software; the Free Software Foundation
+dnl gives unlimited permission to copy and/or distribute it,
+dnl with or without modifications, as long as this notice is preserved.
+
+dnl From Paul Eggert.
+
+# Define HAVE_LONG_LONG_INT if 'long long int' works.
+# This fixes a bug in Autoconf 2.61, but can be removed once we
+# assume 2.62 everywhere.
+
+# Note: If the type 'long long int' exists but is only 32 bits large
+# (as on some very old compilers), HAVE_LONG_LONG_INT will not be
+# defined. In this case you can treat 'long long int' like 'long int'.
+
+AC_DEFUN([AC_TYPE_LONG_LONG_INT],
+[
+  AC_CACHE_CHECK([for long long int], [ac_cv_type_long_long_int],
+    [AC_LINK_IFELSE(
+       [_AC_TYPE_LONG_LONG_SNIPPET],
+       [dnl This catches a bug in Tandem NonStop Kernel (OSS) cc -O circa 2004.
+        dnl If cross compiling, assume the bug isn't important, since
+        dnl nobody cross compiles for this platform as far as we know.
+        AC_RUN_IFELSE(
+          [AC_LANG_PROGRAM(
+             [[@%:@include <limits.h>
+               @%:@ifndef LLONG_MAX
+               @%:@ define HALF \
+                        (1LL << (sizeof (long long int) * CHAR_BIT - 2))
+               @%:@ define LLONG_MAX (HALF - 1 + HALF)
+               @%:@endif]],
+             [[long long int n = 1;
+               int i;
+               for (i = 0; ; i++)
+                 {
+                   long long int m = n << i;
+                   if (m >> i != n)
+                     return 1;
+                   if (LLONG_MAX / 2 < m)
+                     break;
+                 }
+               return 0;]])],
+          [ac_cv_type_long_long_int=yes],
+          [ac_cv_type_long_long_int=no],
+          [ac_cv_type_long_long_int=yes])],
+       [ac_cv_type_long_long_int=no])])
+  if test $ac_cv_type_long_long_int = yes; then
+    AC_DEFINE([HAVE_LONG_LONG_INT], [1],
+      [Define to 1 if the system has the type `long long int'.])
+  fi
+])
+
+# Define HAVE_UNSIGNED_LONG_LONG_INT if 'unsigned long long int' works.
+# This fixes a bug in Autoconf 2.61, but can be removed once we
+# assume 2.62 everywhere.
+
+# Note: If the type 'unsigned long long int' exists but is only 32 bits
+# large (as on some very old compilers), AC_TYPE_UNSIGNED_LONG_LONG_INT
+# will not be defined. In this case you can treat 'unsigned long long int'
+# like 'unsigned long int'.
+
+AC_DEFUN([AC_TYPE_UNSIGNED_LONG_LONG_INT],
+[
+  AC_CACHE_CHECK([for unsigned long long int],
+    [ac_cv_type_unsigned_long_long_int],
+    [AC_LINK_IFELSE(
+       [_AC_TYPE_LONG_LONG_SNIPPET],
+       [ac_cv_type_unsigned_long_long_int=yes],
+       [ac_cv_type_unsigned_long_long_int=no])])
+  if test $ac_cv_type_unsigned_long_long_int = yes; then
+    AC_DEFINE([HAVE_UNSIGNED_LONG_LONG_INT], [1],
+      [Define to 1 if the system has the type `unsigned long long int'.])
+  fi
+])
+
+# Expands to a C program that can be used to test for simultaneous support
+# of 'long long' and 'unsigned long long'. We don't want to say that
+# 'long long' is available if 'unsigned long long' is not, or vice versa,
+# because too many programs rely on the symmetry between signed and unsigned
+# integer types (excluding 'bool').
+AC_DEFUN([_AC_TYPE_LONG_LONG_SNIPPET],
+[
+  AC_LANG_PROGRAM(
+    [[/* For now, do not test the preprocessor; as of 2007 there are too many
+         implementations with broken preprocessors.  Perhaps this can
+         be revisited in 2012.  In the meantime, code should not expect
+         #if to work with literals wider than 32 bits.  */
+      /* Test literals.  */
+      long long int ll = 9223372036854775807ll;
+      long long int nll = -9223372036854775807LL;
+      unsigned long long int ull = 18446744073709551615ULL;
+      /* Test constant expressions.   */
+      typedef int a[((-9223372036854775807LL < 0 && 0 < 9223372036854775807ll)
+                     ? 1 : -1)];
+      typedef int b[(18446744073709551615ULL <= (unsigned long long int) -1
+                     ? 1 : -1)];
+      int i = 63;]],
+    [[/* Test availability of runtime routines for shift and division.  */
+      long long int llmax = 9223372036854775807ll;
+      unsigned long long int ullmax = 18446744073709551615ull;
+      return ((ll << 63) | (ll >> 63) | (ll < i) | (ll > i)
+              | (llmax / ll) | (llmax % ll)
+              | (ull << 63) | (ull >> 63) | (ull << i) | (ull >> i)
+              | (ullmax / ull) | (ullmax % ull));]])
+])
+
+# Copyright (C) 2002, 2003, 2005, 2006, 2007, 2008, 2011 Free Software
+# Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
+
+# serial 1
 
 # AM_AUTOMAKE_VERSION(VERSION)
 # ----------------------------
@@ -34,7 +145,7 @@ AC_DEFUN([AM_AUTOMAKE_VERSION],
 [am__api_version='1.11'
 dnl Some users find AM_AUTOMAKE_VERSION and mistake it for a way to
 dnl require some minimum version.  Point them to the right macro.
-m4_if([$1], [1.11.1], [],
+m4_if([$1], [1.11.5], [],
       [AC_FATAL([Do not call $0, use AM_INIT_AUTOMAKE([$1]).])])dnl
 ])
 
@@ -50,18 +161,20 @@ m4_define([_AM_AUTOCONF_VERSION], [])
 # Call AM_AUTOMAKE_VERSION and AM_AUTOMAKE_VERSION so they can be traced.
 # This function is AC_REQUIREd by AM_INIT_AUTOMAKE.
 AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-[AM_AUTOMAKE_VERSION([1.11.1])dnl
+[AM_AUTOMAKE_VERSION([1.11.5])dnl
 m4_ifndef([AC_AUTOCONF_VERSION],
   [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
 _AM_AUTOCONF_VERSION(m4_defn([AC_AUTOCONF_VERSION]))])
 
 # AM_AUX_DIR_EXPAND                                         -*- Autoconf -*-
 
-# Copyright (C) 2001, 2003, 2005  Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003, 2005, 2011 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
+
+# serial 1
 
 # For projects using AC_CONFIG_AUX_DIR([foo]), Autoconf sets
 # $ac_aux_dir to `$srcdir/foo'.  In other projects, it is set to
@@ -144,14 +257,14 @@ AC_CONFIG_COMMANDS_PRE(
 Usually this means the macro was only invoked conditionally.]])
 fi])])
 
-# Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2009
-# Free Software Foundation, Inc.
+# Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2009,
+# 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
-# serial 10
+# serial 12
 
 # There are a few dirty hacks below to avoid letting `AC_PROG_CC' be
 # written in clear, in which case automake, when reading aclocal.m4,
@@ -191,6 +304,7 @@ AC_CACHE_CHECK([dependency style of $depcc],
   # instance it was reported that on HP-UX the gcc test will end up
   # making a dummy file named `D' -- because `-MD' means `put the output
   # in D'.
+  rm -rf conftest.dir
   mkdir conftest.dir
   # Copy depcomp to subdir because otherwise we won't find it if we're
   # using a relative directory.
@@ -255,7 +369,7 @@ AC_CACHE_CHECK([dependency style of $depcc],
 	break
       fi
       ;;
-    msvisualcpp | msvcmsys)
+    msvc7 | msvc7msys | msvisualcpp | msvcmsys)
       # This compiler won't grok `-c -o', but also, the minuso test has
       # not run yet.  These depmodes are late enough in the game, and
       # so weak that their functioning should not be impacted.
@@ -320,10 +434,13 @@ AC_DEFUN([AM_DEP_TRACK],
 if test "x$enable_dependency_tracking" != xno; then
   am_depcomp="$ac_aux_dir/depcomp"
   AMDEPBACKSLASH='\'
+  am__nodep='_no'
 fi
 AM_CONDITIONAL([AMDEP], [test "x$enable_dependency_tracking" != xno])
 AC_SUBST([AMDEPBACKSLASH])dnl
 _AM_SUBST_NOTMAKE([AMDEPBACKSLASH])dnl
+AC_SUBST([am__nodep])dnl
+_AM_SUBST_NOTMAKE([am__nodep])dnl
 ])
 
 # Generate code to set up dependency tracking.              -*- Autoconf -*-
@@ -545,11 +662,14 @@ for _am_header in $config_headers :; do
 done
 echo "timestamp for $_am_arg" >`AS_DIRNAME(["$_am_arg"])`/stamp-h[]$_am_stamp_count])
 
-# Copyright (C) 2001, 2003, 2005, 2008  Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003, 2005, 2008, 2011 Free Software Foundation,
+# Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
+
+# serial 1
 
 # AM_PROG_INSTALL_SH
 # ------------------
@@ -586,6 +706,46 @@ else
 fi
 rmdir .tst 2>/dev/null
 AC_SUBST([am__leading_dot])])
+
+# Add --enable-maintainer-mode option to configure.         -*- Autoconf -*-
+# From Jim Meyering
+
+# Copyright (C) 1996, 1998, 2000, 2001, 2002, 2003, 2004, 2005, 2008,
+# 2011 Free Software Foundation, Inc.
+#
+# This file is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# serial 5
+
+# AM_MAINTAINER_MODE([DEFAULT-MODE])
+# ----------------------------------
+# Control maintainer-specific portions of Makefiles.
+# Default is to disable them, unless `enable' is passed literally.
+# For symmetry, `disable' may be passed as well.  Anyway, the user
+# can override the default with the --enable/--disable switch.
+AC_DEFUN([AM_MAINTAINER_MODE],
+[m4_case(m4_default([$1], [disable]),
+       [enable], [m4_define([am_maintainer_other], [disable])],
+       [disable], [m4_define([am_maintainer_other], [enable])],
+       [m4_define([am_maintainer_other], [enable])
+        m4_warn([syntax], [unexpected argument to AM@&t@_MAINTAINER_MODE: $1])])
+AC_MSG_CHECKING([whether to enable maintainer-specific portions of Makefiles])
+  dnl maintainer-mode's default is 'disable' unless 'enable' is passed
+  AC_ARG_ENABLE([maintainer-mode],
+[  --][am_maintainer_other][-maintainer-mode  am_maintainer_other make rules and dependencies not useful
+			  (and sometimes confusing) to the casual installer],
+      [USE_MAINTAINER_MODE=$enableval],
+      [USE_MAINTAINER_MODE=]m4_if(am_maintainer_other, [enable], [no], [yes]))
+  AC_MSG_RESULT([$USE_MAINTAINER_MODE])
+  AM_CONDITIONAL([MAINTAINER_MODE], [test $USE_MAINTAINER_MODE = yes])
+  MAINT=$MAINTAINER_MODE_TRUE
+  AC_SUBST([MAINT])dnl
+]
+)
+
+AU_DEFUN([jm_MAINTAINER_MODE], [AM_MAINTAINER_MODE])
 
 # Check to see how 'make' treats includes.	            -*- Autoconf -*-
 
@@ -682,11 +842,14 @@ else
 fi
 ])
 
-# Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
+# Copyright (C) 2003, 2004, 2005, 2006, 2011 Free Software Foundation,
+# Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
+
+# serial 1
 
 # AM_PROG_MKDIR_P
 # ---------------
@@ -710,13 +873,14 @@ esac
 
 # Helper functions for option handling.                     -*- Autoconf -*-
 
-# Copyright (C) 2001, 2002, 2003, 2005, 2008  Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003, 2005, 2008, 2010 Free Software
+# Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
-# serial 4
+# serial 5
 
 # _AM_MANGLE_OPTION(NAME)
 # -----------------------
@@ -724,13 +888,13 @@ AC_DEFUN([_AM_MANGLE_OPTION],
 [[_AM_OPTION_]m4_bpatsubst($1, [[^a-zA-Z0-9_]], [_])])
 
 # _AM_SET_OPTION(NAME)
-# ------------------------------
+# --------------------
 # Set option NAME.  Presently that only means defining a flag for this option.
 AC_DEFUN([_AM_SET_OPTION],
 [m4_define(_AM_MANGLE_OPTION([$1]), 1)])
 
 # _AM_SET_OPTIONS(OPTIONS)
-# ----------------------------------
+# ------------------------
 # OPTIONS is a space-separated list of Automake options.
 AC_DEFUN([_AM_SET_OPTIONS],
 [m4_foreach_w([_AM_Option], [$1], [_AM_SET_OPTION(_AM_Option)])])
@@ -806,11 +970,13 @@ Check your system clock])
 fi
 AC_MSG_RESULT(yes)])
 
-# Copyright (C) 2001, 2003, 2005  Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003, 2005, 2011 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
+
+# serial 1
 
 # AM_PROG_INSTALL_STRIP
 # ---------------------
@@ -834,13 +1000,13 @@ fi
 INSTALL_STRIP_PROGRAM="\$(install_sh) -c -s"
 AC_SUBST([INSTALL_STRIP_PROGRAM])])
 
-# Copyright (C) 2006, 2008  Free Software Foundation, Inc.
+# Copyright (C) 2006, 2008, 2010 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
-# serial 2
+# serial 3
 
 # _AM_SUBST_NOTMAKE(VARIABLE)
 # ---------------------------
@@ -849,13 +1015,13 @@ AC_SUBST([INSTALL_STRIP_PROGRAM])])
 AC_DEFUN([_AM_SUBST_NOTMAKE])
 
 # AM_SUBST_NOTMAKE(VARIABLE)
-# ---------------------------
+# --------------------------
 # Public sister of _AM_SUBST_NOTMAKE.
 AC_DEFUN([AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE($@)])
 
 # Check how to create a tarball.                            -*- Autoconf -*-
 
-# Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+# Copyright (C) 2004, 2005, 2012 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -877,10 +1043,11 @@ AC_DEFUN([AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE($@)])
 # a tarball read from stdin.
 #     $(am__untar) < result.tar
 AC_DEFUN([_AM_PROG_TAR],
-[# Always define AMTAR for backward compatibility.
-AM_MISSING_PROG([AMTAR], [tar])
+[# Always define AMTAR for backward compatibility.  Yes, it's still used
+# in the wild :-(  We should find a proper way to deprecate it ...
+AC_SUBST([AMTAR], ['$${TAR-tar}'])
 m4_if([$1], [v7],
-     [am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'],
+     [am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'],
      [m4_case([$1], [ustar],, [pax],,
               [m4_fatal([Unknown tar format])])
 AC_MSG_CHECKING([how to create a $1 tar archive])
