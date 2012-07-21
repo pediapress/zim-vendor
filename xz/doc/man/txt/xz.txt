@@ -1008,6 +1008,12 @@ ROBOT MODE
                   pression time cannot be known, because only the options that
                   are needed for decompression are stored in the .xz headers.
 
+       The columns of the summary lines:
+              2.  Amount of memory (in bytes) required to decompress this file
+                  with this xz version
+              3.  yes or no indicating if all block  headers  have  both  com-
+                  pressed size and uncompressed size stored in them
+
        The columns of the totals line:
               2.  Number of streams
               3.  Number of blocks
@@ -1360,4 +1366,4 @@ SEE ALSO
 
 
 
-Tukaani                           2010-10-04                             XZ(1)
+Tukaani                           2012-05-27                             XZ(1)
