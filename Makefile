@@ -7,6 +7,9 @@ export CPPFLAGS = -I$(BUILD)/prefix/include
 
 all:: build-cxxtools build-xz build-tntdb build-zimlib build-zimwriter
 
+dummy::
+
+
 # --- cxxtools
 configure-cxxtools:: $(BUILD)/cxxtools-configure-done
 
